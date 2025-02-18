@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Foundry
+        uses: onbjerg/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install deps
+        run: make setup
+
+      - name: Build
+        run: make build
+
+      - name: Run forge tests
+        run: forge test
