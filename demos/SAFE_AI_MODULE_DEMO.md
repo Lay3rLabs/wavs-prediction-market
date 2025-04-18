@@ -3,8 +3,6 @@
 A demo where an AVS uses an AI agent to propose transactions to a Safe.
 
 TODO:
-
-- [ ] Need to more reliably parse output from agent
 - [ ] Safe module could have some extra safety features like permissions (should be deployed with a guard)
 
 Reading and Resources:
