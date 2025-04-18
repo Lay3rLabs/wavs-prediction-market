@@ -1,4 +1,4 @@
-# [WAVS](https://docs.wavs.xyz) Prediction Market Template
+# [WAVS](https://docs.wavs.xyz) Prediction Market
 
 **Template for getting started with prediction markets and WAVS. NOT PRODUCTION READY.**
 
