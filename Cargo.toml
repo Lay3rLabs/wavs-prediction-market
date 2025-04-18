@@ -28,3 +28,4 @@ anyhow = "1.0.95"
 ## Alloy
 alloy-sol-macro = { version = "0.8.13", features = ["json"]}
 alloy-sol-types = "0.8.13"
+alloy-primitives = "0.8.13"

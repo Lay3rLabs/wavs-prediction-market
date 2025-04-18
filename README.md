@@ -1,8 +1,8 @@
-# [WAVS](https://docs.wavs.xyz) Monorepo Template
+# [WAVS](https://docs.wavs.xyz) Prediction Market Template
 
-**Template for getting started with developing WAVS applications**
+**Template for getting started with prediction markets and WAVS. NOT PRODUCTION READY.**
 
-A template for developing WebAssembly AVS applications using Rust and Solidity, configured for Windows *WSL*, Linux, and MacOS. The sample oracle service fetches the current price of a cryptocurrency from [CoinMarketCap](https://coinmarketcap.com) and saves it on chain.
+A demo where a prediction market is resolved by an AVS oracle.
 
 ## System Requirements
 
@@ -10,27 +10,32 @@ A template for developing WebAssembly AVS applications using Rust and Solidity, 
 <summary>Core (Docker, Compose, Make, JQ, Node v21+)</summary>
 
 ### Docker
+
 - **MacOS**: `brew install --cask docker`
 - **Linux**: `sudo apt -y install docker.io`
 - **Windows WSL**: [docker desktop wsl](https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2) & `sudo chmod 666 /var/run/docker.sock`
 - [Docker Documentation](https://docs.docker.com/get-started/get-docker/)
 
 ### Docker Compose
+
 - **MacOS**: Already installed with Docker installer
 - **Linux + Windows WSL**: `sudo apt-get install docker-compose-v2`
 - [Compose Documentation](https://docs.docker.com/compose/)
 
 ### Make
+
 - **MacOS**: `brew install make`
 - **Linux + Windows WSL**: `sudo apt -y install make`
 - [Make Documentation](https://www.gnu.org/software/make/manual/make.html)
 
 ### JQ
+
 - **MacOS**: `brew install jq`
 - **Linux + Windows WSL**: `sudo apt -y install jq`
 - [JQ Documentation](https://jqlang.org/download/)
 
 ### Node.js
+
 - **Required Version**: v21+
 - [Installation via NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 </details>
@@ -134,10 +139,12 @@ COIN_MARKET_CAP_ID=1 make wasi-exec
 
 > [!NOTE]
 > If you are running on a Mac with an ARM chip, you will need to do the following:
+>
 > - Set up Rosetta: `softwareupdate --install-rosetta`
 > - Enable Rosetta (Docker Desktop: Settings -> General -> enable "Use Rosetta for x86_64/amd64 emulation on Apple Silicon")
 >
 > Configure one of the following networking:
+>
 > - Docker Desktop: Settings -> Resources -> Network -> 'Enable Host Networking'
 > - `brew install chipmk/tap/docker-mac-net-connect && sudo brew services start chipmk/tap/docker-mac-net-connect`
 
@@ -155,42 +162,43 @@ cp .env.example .env
 make start-all
 ```
 
-### Deploy Contract
-
-Upload your service's trigger and submission contracts. The trigger contract is where WAVS will watch for events, and the submission contract is where the AVS service operator will submit the result on chain.
+### Deploy prediction market contracts
 
 ```bash
-export SERVICE_MANAGER_ADDR=`make get-eigen-service-manager-from-deploy`
-forge script ./script/Deploy.s.sol ${SERVICE_MANAGER_ADDR} --sig "run(string)" --rpc-url http://localhost:8545 --broadcast
+forge script script/PredictionMarket.s.sol:DeployPredictionMarket --rpc-url http://localhost:8545 --broadcast
+
+# Load the created addresses into the environment
+export PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS=$(cat broadcast/PredictionMarket.s.sol/31337/run-latest.json | jq -r '.transactions[] | select(.transactionType=="CREATE" and .contractName=="PredictionMarketOracleController") | .contractAddress')
+export PREDICTION_MARKET_FACTORY_ADDRESS=$(cat broadcast/PredictionMarket.s.sol/31337/run-latest.json | jq -r '.transactions[] | select(.transactionType=="CREATE" and .contractName=="PredictionMarketOracleController") | .additionalContracts[0].address')
+export COLLATERAL_TOKEN_ADDRESS=$(cat broadcast/PredictionMarket.s.sol/31337/run-latest.json | jq -r '.transactions[] | select(.transactionType=="CREATE" and .contractName=="ERC20Mintable") | .contractAddress')
+export CONDITIONAL_TOKENS_ADDRESS=$(cat broadcast/PredictionMarket.s.sol/31337/run-latest.json | jq -r '.transactions[] | select(.transactionType=="CALL" and .contractName=="PredictionMarketFactory" and .function=="createConditionalTokenAndLMSRMarketMaker(string,bytes32,address,uint64,uint256)") | .additionalContracts[0].address')
+export MARKET_MAKER_ADDRESS=$(cat broadcast/PredictionMarket.s.sol/31337/run-latest.json | jq -r '.transactions[] | select(.transactionType=="CALL" and .contractName=="PredictionMarketFactory" and .function=="createConditionalTokenAndLMSRMarketMaker(string,bytes32,address,uint64,uint256)") | .additionalContracts[1].address')
 ```
 
-> [!TIP]
-> You can see the deployed trigger address with `make get-trigger-from-deploy`
-> and the deployed submission address with `make get-service-handler-from-deploy`
-
-## Deploy Service
-
-Deploy the compiled component with the contracts from the previous steps. Review the [makefile](./Makefile) for more details and configuration options.`TRIGGER_EVENT` is the event that the trigger contract emits and WAVS watches for. By altering `SERVICE_TRIGGER_ADDR` you can watch events for contracts others have deployed.
+### Deploy service component
 
 ```bash
-TRIGGER_EVENT="NewTrigger(bytes)" make deploy-service
+COMPONENT_FILENAME=prediction_market_oracle.wasm SERVICE_TRIGGER_ADDR=$PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS SERVICE_SUBMISSION_ADDR=$PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS make deploy-service
 ```
 
-## Trigger the Service
-
-Anyone can now call the [trigger contract](./src/contracts/WavsTrigger.sol) which emits the trigger event WAVS is watching for from the previous step. WAVS then calls the service and saves the result on-chain.
+### Buy YES in the prediction market
 
 ```bash
-export COIN_MARKET_CAP_ID=1
-export SERVICE_TRIGGER_ADDR=`make get-trigger-from-deploy`
-forge script ./script/Trigger.s.sol ${SERVICE_TRIGGER_ADDR} ${COIN_MARKET_CAP_ID} --sig "run(string,string)" --rpc-url http://localhost:8545 --broadcast -v 4
+forge script script/PredictionMarket.s.sol:BuyYesPredictionMarket --rpc-url http://localhost:8545 --broadcast
 ```
 
-## Show the result
+> Notice in the logs that you start with 1e18 collateral tokens, and then purchase 1e18 YES shares for 525090975565627651 (~5.25e17) collateral tokens, leaving 474909024434372349 (~4.75e17) collateral tokens remaining.
 
-Query the latest submission contract id from the previous request made.
+### Trigger the prediction market oracle AVS to resolve the market
 
 ```bash
-# Get the latest TriggerId and show the result via `script/ShowResult.s.sol`
-make show-result
+forge script script/PredictionMarket.s.sol:TriggerOracleResolvePredictionMarket --sig "run()" --rpc-url http://localhost:8545 --broadcast
 ```
+
+### Redeem YES in the resolved prediction market
+
+```bash
+forge script script/PredictionMarket.s.sol:RedeemPredictionMarket --rpc-url http://localhost:8545 --broadcast
+```
+
+> Notice in the logs that you redeem 1e18 outcome (YES) shares for 1e18 collateral tokens, ending up with 1474909024434372349 (~1.47e18) collateral tokens. This is more than you started with since you earned a profit from the market by betting on the correct outcome.

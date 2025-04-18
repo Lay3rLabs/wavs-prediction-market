@@ -1,9 +1,10 @@
+#[allow(warnings)]
+mod bindings;
+use bindings::{export, Guest, TriggerAction};
 mod trigger;
-use trigger::{decode_trigger_event, encode_trigger_output, Destination};
-use wavs_wasi_chain::http::{fetch_json, http_request_get};
-pub mod bindings;
-use crate::bindings::{export, Guest, TriggerAction};
 use serde::{Deserialize, Serialize};
+use trigger::{decode_trigger_event, encode_trigger_output};
+use wavs_wasi_chain::http::{fetch_json, http_request_get};
 use wstd::{http::HeaderValue, runtime::block_on};
 
 struct Component;
@@ -11,31 +12,23 @@ export!(Component with_types_in bindings);
 
 impl Guest for Component {
     fn run(action: TriggerAction) -> std::result::Result<Option<Vec<u8>>, String> {
-        let (trigger_id, req, dest) =
-            decode_trigger_event(action.data).map_err(|e| e.to_string())?;
+        let (trigger_info, data) = decode_trigger_event(action.data)?;
 
-        // Convert bytes to string and parse first char as u64
-        let input = std::str::from_utf8(&req).map_err(|e| e.to_string())?;
-        println!("input id: {}", input);
+        let bitcoin_price = block_on(get_price_feed(1))?;
 
-        let id = input.chars().next().ok_or("Empty input")?;
-        let id = id.to_digit(16).ok_or("Invalid hex digit")? as u64;
+        // Resolve the market as YES if the price of Bitcoin is over $1.
+        let result = bitcoin_price > 1.0;
 
-        let res = block_on(async move {
-            let resp_data = get_price_feed(id).await?;
-            println!("resp_data: {:?}", resp_data);
-            serde_json::to_vec(&resp_data).map_err(|e| e.to_string())
-        })?;
-
-        let output = match dest {
-            Destination::Ethereum => Some(encode_trigger_output(trigger_id, &res)),
-            Destination::CliOutput => Some(res),
-        };
-        Ok(output)
+        Ok(Some(encode_trigger_output(
+            trigger_info.triggerId,
+            data.lmsrMarketMaker,
+            data.conditionalTokens,
+            result,
+        )))
     }
 }
 
-async fn get_price_feed(id: u64) -> Result<PriceFeedData, String> {
+async fn get_price_feed(id: u64) -> Result<f64, String> {
     let url = format!(
         "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail?id={}&range=1h",
         id
@@ -55,23 +48,12 @@ async fn get_price_feed(id: u64) -> Result<PriceFeedData, String> {
 
     let json: Root = fetch_json(req).await.map_err(|e| e.to_string())?;
 
-    Ok(PriceFeedData {
-        symbol: json.data.symbol,
-        price: json.data.statistics.price,
-        timestamp: json.status.timestamp,
-    })
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PriceFeedData {
-    symbol: String,
-    timestamp: String,
-    price: f64,
+    Ok(json.data.statistics.price)
 }
 
 /// -----
-/// <https://transform.tools/json-to-rust-serde>
-/// Generated from <https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail?id=1&range=1h>
+/// https://transform.tools/json-to-rust-serde
+/// Generated from https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail?id=1&range=1h
 /// -----
 ///
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
