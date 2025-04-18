@@ -1,5 +1,11 @@
 # WAVS Demo Services
 
+NOTE: you can find more up to date examples of these demos in their respective repos.
+
+- [wavs-nft](https://github.com/Lay3rLabs/wavs-nft)
+- [wavs-prediction-market](https://github.com/Lay3rLabs/wavs-prediction-market)
+- [wavs-safe](https://github.com/Lay3rLabs/wavs-safe)
+
 <!-- ![Rust](https://github.com/gakonst/foundry-rust-template/workflows/Rust/badge.svg)
 ![Solidity](https://github.com/gakonst/foundry-rust-template/workflows/Solidity/badge.svg) -->
 
@@ -24,26 +30,31 @@ Comprehensive demos for developing WAVS (WebAssembly AVS) applications using Rus
 <summary>Core (Docker, Compose, Make, JQ, NodeJS v21+)</summary>
 
 ### Docker
+
 - **MacOS**: `brew install --cask docker`
 - **Ubuntu**: `sudo apt -y install docker.io`
 - [Docker Documentation](https://docs.docker.com/get-started/get-docker/)
 
 ### Docker Compose
+
 - **MacOS**: Already installed with Docker installer
 - **Linux**: `sudo apt-get install docker-compose-v2`
 - [Compose Documentation](https://docs.docker.com/compose/)
 
 ### Make
+
 - **MacOS**: `brew install make`
 - **Linux**: `sudo apt -y install make`
 - [Make Documentation](https://www.gnu.org/software/make/manual/make.html)
 
 ### JQ
+
 - **MacOS**: `brew install jq`
 - **Ubuntu**: `sudo apt -y install jq`
 - [JQ Documentation](https://jqlang.org/download/)
 
 ### Node.js
+
 - **Required Version**: v21+
 - [Installation via NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 </details>
