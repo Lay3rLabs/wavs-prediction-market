@@ -191,20 +191,13 @@ need to be available to the frontend.
 # In a terminal, start the backend
 make start-all
 
-# In another terminal, deploy the necessary contracts/service and do a test run.
+# In another terminal, deploy the necessary contracts/service.
 make deploy-contracts
-make buy-yes
 make deploy-service
-make trigger-service
-sleep 3
-make redeem
 
 # Then install frontend dependencies
 cd frontend
 npm install
-
-# Load environment variables
-npm run load-env
 
 # And start the server
 npm run dev
@@ -214,35 +207,11 @@ npm run dev
 
 To test the prediction market, follow these steps:
 
-<!-- TODO: change to steps -->
-
-### Connecting Your Wallet
-
-1. Click the "Connect Wallet" button in the top-right corner
-2. Select your wallet provider (Metamask, WalletConnect, etc.)
-3. Follow the prompts to connect your wallet
-
-### Creating a Prediction Market
-
-1. Click "Create Market" in the navigation
-2. Enter your market question (must be a yes/no question)
-3. Set the initial funding amount and fee percentage
-4. Submit the transaction through your wallet
-
-### Trading in a Market
-
-1. Browse and select a market from the homepage
-2. Click "Buy Prediction Tokens"
-3. Choose YES or NO outcome
-4. Enter the amount of tokens you want to buy
-5. Confirm the transaction in your wallet
-
-### Admin Functions
-
-1. Navigate to the Admin page
-2. Select an unresolved market from the list
-3. Click "Trigger Oracle Resolution"
-4. Confirm the transaction (0.1 ETH required)
+1. Go to the admin page and use the faucet to get fee tokens
+2. Go to the markets page and click the active market
+3. Buy YES outcome tokens
+4. Go to the admin page and trigger the oracle to resolve the market as YES
+5. Back on the market page, redeem your YES outcome tokens for collateral tokens now that the market has been resolved
 
 ## Claude Code
 
