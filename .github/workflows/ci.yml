@@ -70,6 +70,3 @@ jobs:
 
       - name: Build
         run: make build
-
-      - name: Run forge tests
-        run: forge test

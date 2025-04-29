@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.claude
     volumes:
-      - .:/workspace:consistent
+      - ..:/workspace:consistent
       - claude-code-bashhistory:/commandhistory
       - claude-code-config:/home/node/.claude
     environment:

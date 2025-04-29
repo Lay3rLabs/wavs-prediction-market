@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
+import {console} from "forge-std/console.sol";
+
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 import {LMSRMarketMakerFactory} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMakerFactory.sol";
 import {Whitelist} from "@lay3rlabs/conditional-tokens-market-makers/Whitelist.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
-import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+
 import {ERC20Mintable} from "./ERC20Mintable.sol";
-import {console} from "forge-std/console.sol";
 
 contract PredictionMarketFactory is LMSRMarketMakerFactory {
     address public oracle = msg.sender;

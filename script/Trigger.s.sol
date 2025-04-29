@@ -2,9 +2,10 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
+import {console} from "forge-std/console.sol";
 
 import {ITypes} from "../src/interfaces/ITypes.sol";
-import {PredictionMarketOracleController} from "../src/PredictionMarketOracleController.sol";
+import {PredictionMarketOracleController} from "../src/contracts/PredictionMarketOracleController.sol";
 
 // forge script ./script/Trigger.s.sol ${ORACLE_CONTROLLER_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url http://localhost:8545 --broadcast
 contract TriggerScript is Script {

@@ -246,3 +246,15 @@ To test the prediction market, follow these steps:
 2. Select an unresolved market from the list
 3. Click "Trigger Oracle Resolution"
 4. Confirm the transaction (0.1 ETH required)
+
+## Claude Code
+
+To spin up a sandboxed instance of [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) in a Docker container that only has access to this project's files, run the following command:
+
+```bash
+npm run claude-code
+# or with no restrictions (--dangerously-skip-permissions)
+npm run claude-code:unrestricted
+```
+
+You must have [Docker](https://www.docker.com/) installed.

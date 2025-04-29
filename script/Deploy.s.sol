@@ -3,14 +3,14 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
 import {stdJson} from "forge-std/StdJson.sol";
-import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 
+import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 
-import {PredictionMarketFactory} from "../src/PredictionMarketFactory.sol";
-import {PredictionMarketOracleController} from "../src/PredictionMarketOracleController.sol";
-import {ERC20Mintable} from "../src/ERC20Mintable.sol";
+import {PredictionMarketFactory} from "../src/contracts/PredictionMarketFactory.sol";
+import {PredictionMarketOracleController} from "../src/contracts/PredictionMarketOracleController.sol";
+import {ERC20Mintable} from "../src/contracts/ERC20Mintable.sol";
 
 // forge script ./script/Deploy.s.sol ${SERVICE_MANAGER} --sig "run(string)" --rpc-url http://localhost:8545 --broadcast
 contract DeployScript is Script {

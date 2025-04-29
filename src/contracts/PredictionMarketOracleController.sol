@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
-import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {IWavsServiceHandler} from "@wavs/interfaces/IWavsServiceHandler.sol";
 import {IWavsServiceManager} from "@wavs/interfaces/IWavsServiceManager.sol";
-import {ITypes} from "./interfaces/ITypes.sol";
-import {PredictionMarketFactory} from "./PredictionMarketFactory.sol";
+import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
+
+import {ITypes} from "../interfaces/ITypes.sol";
+import {PredictionMarketFactory} from "./PredictionMarketFactory.sol";
 
 // The contract responsible for triggering the oracle to resolve the market and handling the oracle output and instructing the market maker to resolve the market.
 contract PredictionMarketOracleController is IWavsServiceHandler {

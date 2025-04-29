@@ -8,7 +8,7 @@ import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 
 import {ITypes} from "../src/interfaces/ITypes.sol";
-import {ERC20Mintable} from "../src/ERC20Mintable.sol";
+import {ERC20Mintable} from "../src/contracts/ERC20Mintable.sol";
 
 // forge script ./script/Redeem.s.sol ${FACTORY_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url http://localhost:8545 --broadcast
 contract RedeemScript is Script {

@@ -1,5 +1,11 @@
 {
   "name": "wavs-prediction-market",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "claude-code": "docker compose -f .claude/docker-compose.claude.yml run --rm --remove-orphans -it claude-code-sandbox bash -c 'claude; exec'",
+    "claude-code:unrestricted": "docker compose -f .claude/docker-compose.claude.yml run --rm --remove-orphans -it claude-code-sandbox bash -c 'claude --dangerously-skip-permissions; exec'"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "^5.2.0",
     "@wavs/solidity": "^0.3.0-beta",
