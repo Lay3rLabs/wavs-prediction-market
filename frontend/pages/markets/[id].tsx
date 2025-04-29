@@ -128,8 +128,8 @@ export default function MarketPage() {
           // Create real market object
           const marketData: Market = {
             id: marketId,
-            question: "Will the price of Bitcoin be above $1?", // You would get the question from somewhere
-            createdAt: Math.floor(Date.now() / 1000) - 86400 * 7, // Mock creation date
+            question: "Will the price of Bitcoin be above $1 for the whole day?", // You would get the question from somewhere
+            createdAt: Math.floor(Date.now() / 1000), // Mock creation date
             isResolved,
             result,
             resolvedAt: isResolved

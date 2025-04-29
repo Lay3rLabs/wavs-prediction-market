@@ -92,8 +92,8 @@ export default function AdminPage() {
       // Create market object
       const market: Market = {
         id: MARKET_MAKER_ADDRESS,
-        question: "Will the price of Bitcoin be above $1?", // Could be fetched from somewhere
-        createdAt: Math.floor(Date.now() / 1000) - 86400 * 3, // Approximation
+        question: "Will the price of Bitcoin be above $1 for the whole day?", // Could be fetched from somewhere
+        createdAt: Math.floor(Date.now() / 1000), // Mock creation date
         isResolved: false,
         marketMakerAddress: MARKET_MAKER_ADDRESS,
         conditionalTokensAddress: conditionalTokensAddress,

@@ -108,8 +108,8 @@ export default function Home() {
         // Create market object
         const market: Market = {
           id: MARKET_MAKER_ADDRESS,
-          question: "Will the price of Bitcoin be above $1?", // You would get the actual question from somewhere
-          createdAt: Math.floor(Date.now() / 1000) - 86400 * 3, // Mock creation date
+          question: "Will the price of Bitcoin be above $1 for the whole day?", // You would get the actual question from somewhere
+          createdAt: Math.floor(Date.now() / 1000), // Mock creation date
           isResolved,
           result,
           resolvedAt: isResolved ? Math.floor(Date.now() / 1000) - 86400 : undefined,
