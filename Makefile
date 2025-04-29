@@ -13,7 +13,7 @@ SERVICE_CONFIG ?= '{"fuel_limit":100000000,"max_gas":5000000,"host_envs":[],"kv"
 
 # Define common variables
 CARGO=cargo
-WAVS_CMD ?= $(SUDO) docker run --rm --network host $$(test -f .env && echo "--env-file ./.env") -v $$(pwd):/data ghcr.io/lay3rlabs/wavs:0.3.0-beta wavs-cli
+WAVS_CMD ?= $(SUDO) docker run --rm --network host $$(test -f .env && echo "--env-file ./.env") -v $$(pwd):/data ghcr.io/lay3rlabs/wavs:0.3.0 wavs-cli
 ANVIL_PRIVATE_KEY?=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 RPC_URL?=http://localhost:8545
 SERVICE_MANAGER_ADDR?=`jq -r '.eigen_service_managers.local | .[-1]' .docker/deployments.json`
@@ -74,9 +74,9 @@ setup:
 
 ## start-all: starting anvil and WAVS with docker compose
 # running anvil out of compose is a temp work around for MacOS
-start-all: clean-docker
-	@rm .docker/*.json || true
-	@bash -ec 'anvil & anvil_pid=$$!; trap "kill -9 $$anvil_pid 2>/dev/null" EXIT; $(SUDO) docker compose up; wait'
+start-all: clean-docker setup-env
+	@rm --interactive=never .docker/*.json || true
+	@bash -ec 'anvil --disable-code-size-limit & anvil_pid=$$!; trap "kill -9 $$anvil_pid 2>/dev/null" EXIT; $(SUDO) docker compose up; wait'
 
 ## deploy-contracts: deploying the contracts | SERVICE_MANAGER_ADDR, RPC_URL
 deploy-contracts:
@@ -125,3 +125,15 @@ help: Makefile
 	@echo
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
 	@echo
+
+# helpers
+
+.PHONY: setup-env
+setup-env:
+	@if [ ! -f .env ]; then \
+		if [ -f .env.example ]; then \
+			echo "Creating .env file from .env.example..."; \
+			cp .env.example .env; \
+			echo ".env file created successfully!"; \
+		fi; \
+	fi

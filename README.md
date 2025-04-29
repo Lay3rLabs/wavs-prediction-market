@@ -94,9 +94,6 @@ make setup
 
 # Build the contracts
 forge build
-
-# Run the solidity tests
-forge test
 ```
 
 ### Build WASI components

@@ -32,4 +32,4 @@ lto = true
 
 [package.metadata.component]
 package = "component:prediction-market-oracle"
-target = "wavs:worker/layer-trigger-world@0.3.0-beta"
+target = "wavs:worker/layer-trigger-world@0.3.0"

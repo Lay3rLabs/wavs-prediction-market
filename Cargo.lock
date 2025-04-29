@@ -2161,7 +2161,7 @@ dependencies = [
 
 [[package]]
 name = "prediction-market-oracle"
-version = "0.3.0-beta"
+version = "0.3.0"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-macro",
@@ -3253,9 +3253,9 @@ dependencies = [
 
 [[package]]
 name = "wavs-wasi-chain"
-version = "0.3.0-beta"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c11214acaad030f493d8d3286451d9554d5ebef451710499076e8e36f3fd8e0"
+checksum = "adabf0e7d9d50f63bd7537d9b90acc05d3e3bd35468aed5379fccc740f7d0540"
 dependencies = [
  "alloy-json-rpc",
  "alloy-primitives",

@@ -5,15 +5,30 @@ import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {console} from "forge-std/console.sol";
 
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
-import {LMSRMarketMakerFactory} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMakerFactory.sol";
 import {Whitelist} from "@lay3rlabs/conditional-tokens-market-makers/Whitelist.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 import {ERC20Mintable} from "./ERC20Mintable.sol";
 
-contract PredictionMarketFactory is LMSRMarketMakerFactory {
+contract PredictionMarketFactory {
+    event LMSRMarketMakerCreation(
+        address indexed creator,
+        LMSRMarketMaker lmsrMarketMaker,
+        ConditionalTokens pmSystem,
+        IERC20 collateralToken,
+        bytes32[] conditionIds,
+        uint64 fee,
+        uint256 funding
+    );
+
     address public oracle = msg.sender;
+
+    LMSRMarketMaker public implementationMaster;
+
+    constructor() {
+        implementationMaster = new LMSRMarketMaker(address(this));
+    }
 
     function createConditionalTokenAndLMSRMarketMaker(
         string memory uri,

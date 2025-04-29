@@ -5,6 +5,7 @@ broadcast/
 compiled/*.wasm
 .docker/*.json
 .env
+.env.local
 node_modules/
 .DS_Store
 .next
