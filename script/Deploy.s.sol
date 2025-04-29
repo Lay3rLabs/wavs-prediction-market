@@ -5,10 +5,12 @@ import "forge-std/Script.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 
-import {IWavsServiceManager} from "@wavs/interfaces/IWavsServiceManager.sol";
+import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
+import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 
-import {SimpleSubmit} from "../src/WavsSubmit.sol";
-import {SimpleTrigger} from "../src/WavsTrigger.sol";
+import {PredictionMarketFactory} from "../src/PredictionMarketFactory.sol";
+import {PredictionMarketOracleController} from "../src/PredictionMarketOracleController.sol";
+import {ERC20Mintable} from "../src/ERC20Mintable.sol";
 
 // forge script ./script/Deploy.s.sol ${SERVICE_MANAGER} --sig "run(string)" --rpc-url http://localhost:8545 --broadcast
 contract DeployScript is Script {
@@ -16,50 +18,68 @@ contract DeployScript is Script {
 
     string root = vm.projectRoot();
     string deployments_path = string.concat(root, "/.docker/deployments.json");
-    string script_output_path = string.concat(root, "/.docker/script_deploy.json");
+    string script_output_path =
+        string.concat(root, "/.docker/script_deploy.json");
 
-    uint256 privateKey = vm.envOr(
-        "ANVIL_PRIVATE_KEY", uint256(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80)
-    );
-
-    function setUp() public {}
+    uint256 privateKey =
+        vm.envOr(
+            "ANVIL_PRIVATE_KEY",
+            uint256(
+                0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+            )
+        );
 
     function run(string calldata serviceManagerAddr) public {
+        address serviceManager = vm.parseAddress(serviceManagerAddr);
+        address deployer = vm.addr(privateKey);
+
+        uint64 fee = 5e16; // 5% fee
+        // fund with 1,000 collateral tokens
+        uint256 funding = 1_000e18;
+
         vm.startBroadcast(privateKey);
 
-        SimpleSubmit submit = new SimpleSubmit(IWavsServiceManager(vm.parseAddress(serviceManagerAddr)));
-        SimpleTrigger trigger = new SimpleTrigger();
+        // Deploy the contracts
+        PredictionMarketOracleController oracleController = new PredictionMarketOracleController(
+                serviceManager
+            );
+        PredictionMarketFactory factory = oracleController.factory();
+        ERC20Mintable collateralToken = new ERC20Mintable("Collateral", "CLL");
+
+        // Launch the market
+        collateralToken.mint(deployer, funding);
+        collateralToken.approve(address(factory), funding);
+        (
+            ConditionalTokens conditionalTokens,
+            LMSRMarketMaker lmsrMarketMaker
+        ) = factory.createConditionalTokenAndLMSRMarketMaker(
+                "uri",
+                bytes32(0),
+                address(collateralToken),
+                fee,
+                funding
+            );
 
         vm.stopBroadcast();
 
+        // Log the deployment
+        console.log("Service manager:", serviceManager);
+        console.log("Oracle controller address:", address(oracleController));
+        console.log("Factory address:", address(factory));
+        console.log("Collateral token address:", address(collateralToken));
+        console.log("Conditional tokens address:", address(conditionalTokens));
+        console.log("Market maker address:", address(lmsrMarketMaker));
+
         string memory json = "json";
-        json.serialize("service_handler", Strings.toHexString(address(submit)));
-        json.serialize("trigger", Strings.toHexString(address(trigger)));
-        string memory finalJson = json.serialize("service_manager", serviceManagerAddr);
+        json.serialize("service_manager", serviceManager);
+        json.serialize("oracle_controller", address(oracleController));
+        json.serialize("factory", address(factory));
+        json.serialize("collateral_token", address(collateralToken));
+        json.serialize("conditional_tokens", address(conditionalTokens));
+        string memory finalJson = json.serialize(
+            "market_maker",
+            address(lmsrMarketMaker)
+        );
         vm.writeFile(script_output_path, finalJson);
     }
-
-    function loadEigenContractsFromFS() public view returns (EigenContracts memory) {
-        string memory json = vm.readFile(deployments_path);
-        address dm = address(uint160(bytes20(json.readBytes(".eigen_core.local.delegation_manager"))));
-        address rc = address(uint160(bytes20(json.readBytes(".eigen_core.local.rewards_coordinator"))));
-        address avs = address(uint160(bytes20(json.readBytes(".eigen_core.local.avs_directory"))));
-
-        EigenContracts memory fixture =
-            EigenContracts({delegation_manager: dm, rewards_coordinator: rc, avs_directory: avs});
-
-        return fixture;
-    }
-
-    function loadServiceManagersFromFS() public view returns (address[] memory) {
-        string memory json = vm.readFile(deployments_path);
-        address[] memory service_managers = json.readAddressArray(".eigen_service_managers.local");
-        return service_managers;
-    }
-}
-
-struct EigenContracts {
-    address delegation_manager;
-    address rewards_coordinator;
-    address avs_directory;
 }

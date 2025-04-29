@@ -7,7 +7,7 @@ SUDO := $(shell if groups | grep -q docker; then echo ''; else echo 'sudo'; fi)
 default: build
 
 # Customize these variables
-COMPONENT_FILENAME ?= eth_price_oracle.wasm
+COMPONENT_FILENAME ?= prediction_market_oracle.wasm
 TRIGGER_EVENT ?= "NewTrigger(bytes)"
 SERVICE_CONFIG ?= '{"fuel_limit":100000000,"max_gas":5000000,"host_envs":[],"kv":[],"workflow_id":"default","component_id":"default"}'
 
@@ -17,8 +17,11 @@ WAVS_CMD ?= $(SUDO) docker run --rm --network host $$(test -f .env && echo "--en
 ANVIL_PRIVATE_KEY?=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 RPC_URL?=http://localhost:8545
 SERVICE_MANAGER_ADDR?=`jq -r '.eigen_service_managers.local | .[-1]' .docker/deployments.json`
-SERVICE_TRIGGER_ADDR?=`jq -r '.trigger' "./.docker/script_deploy.json"`
-SERVICE_SUBMISSION_ADDR?=`jq -r '.service_handler' "./.docker/script_deploy.json"`
+PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS?=`jq -r '.oracle_controller' "./.docker/script_deploy.json"`
+PREDICTION_MARKET_FACTORY_ADDRESS?=`jq -r '.factory' "./.docker/script_deploy.json"`
+COLLATERAL_TOKEN_ADDRESS?=`jq -r '.collateral_token' "./.docker/script_deploy.json"`
+CONDITIONAL_TOKENS_ADDRESS?=`jq -r '.conditional_tokens' "./.docker/script_deploy.json"`
+MARKET_MAKER_ADDRESS?=`jq -r '.market_maker' "./.docker/script_deploy.json"`
 COIN_MARKET_CAP_ID?=1
 
 ## build: building the project
@@ -80,34 +83,34 @@ deploy-contracts:
 # `sudo chmod 0666 .docker/deployments.json`
 	@forge script ./script/Deploy.s.sol ${SERVICE_MANAGER_ADDR} --sig "run(string)" --rpc-url $(RPC_URL) --broadcast
 
-## get-service-handler: getting the service handler address from the script deploy
-get-service-handler-from-deploy:
-	@jq -r '.service_handler' "./.docker/script_deploy.json"
-
-## get-trigger: getting the trigger address from the script deploy
-get-trigger-from-deploy:
-	@jq -r '.trigger' "./.docker/script_deploy.json"
+## get-oracle-controller-from-deploy: getting the oracle controller address from the script deploy
+get-oracle-controller-from-deploy:
+	@jq -r '.oracle' "./.docker/script_deploy.json"
 
 ## wavs-cli: running wavs-cli in docker
 wavs-cli:
 	@$(WAVS_CMD) $(filter-out $@,$(MAKECMDGOALS))
 
-## deploy-service: deploying the WAVS component service | COMPONENT_FILENAME, TRIGGER_EVENT, SERVICE_TRIGGER_ADDR, SERVICE_SUBMISSION_ADDR, SERVICE_CONFIG
+## deploy-service: deploying the WAVS component service | COMPONENT_FILENAME, TRIGGER_EVENT, PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS, SERVICE_CONFIG
 deploy-service:
 	@$(WAVS_CMD) deploy-service --log-level=info --data /data/.docker --home /data \
 	--component "/data/compiled/${COMPONENT_FILENAME}" \
 	--trigger-event-name ${TRIGGER_EVENT} \
-	--trigger-address "${SERVICE_TRIGGER_ADDR}" \
-	--submit-address "${SERVICE_SUBMISSION_ADDR}" \
+	--trigger-address "${PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS}" \
+	--submit-address "${PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS}" \
 	--service-config ${SERVICE_CONFIG}
 
-## trigger-service: triggering the service | SERVICE_TRIGGER_ADDR, COIN_MARKET_CAP_ID, RPC_URL
-trigger-service:
-	@forge script ./script/Trigger.s.sol ${SERVICE_TRIGGER_ADDR} ${COIN_MARKET_CAP_ID} --sig "run(string,string)" --rpc-url $(RPC_URL) --broadcast -v 4
+## buy-yes: buying YES in the prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, MARKET_MAKER_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, COLLATERAL_TOKEN_ADDRESS, RPC_URL
+buy-yes:
+	@forge script ./script/BuyYes.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} --sig "run(string,string,string,string)" --rpc-url $(RPC_URL) --broadcast
 
-## show-result: showing the result | SERVICE_TRIGGER_ADDR, SERVICE_SUBMISSION_ADDR, RPC_URL
-show-result:
-	@forge script ./script/ShowResult.s.sol ${SERVICE_TRIGGER_ADDR} ${SERVICE_SUBMISSION_ADDR} --sig "run(string,string)" --rpc-url $(RPC_URL) --broadcast -v 4
+## trigger-service: triggering the service | PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS, MARKET_MAKER_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, RPC_URL
+trigger-service:
+	@forge script ./script/Trigger.s.sol ${PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url $(RPC_URL) --broadcast
+
+## redeem: redeeming the YES in the resolved prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, COLLATERAL_TOKEN_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, RPC_URL
+redeem:
+	@forge script ./script/Redeem.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url $(RPC_URL) --broadcast
 
 _build_forge:
 	@forge build
