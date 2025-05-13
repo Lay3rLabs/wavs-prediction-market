@@ -1,30 +1,43 @@
 #[allow(warnings)]
 mod bindings;
-use bindings::{export, Guest, TriggerAction};
+use std::str::FromStr;
+
+use bindings::{export, host::config_var, Guest, TriggerAction, WasmResponse};
 mod trigger;
 use serde::{Deserialize, Serialize};
 use trigger::{decode_trigger_event, encode_trigger_output};
-use wavs_wasi_chain::http::{fetch_json, http_request_get};
+use wavs_wasi_utils::{
+    evm::alloy_primitives::Address,
+    http::{fetch_json, http_request_get},
+};
 use wstd::{http::HeaderValue, runtime::block_on};
 
 struct Component;
 export!(Component with_types_in bindings);
 
 impl Guest for Component {
-    fn run(action: TriggerAction) -> std::result::Result<Option<Vec<u8>>, String> {
-        let (trigger_info, data) = decode_trigger_event(action.data)?;
+    fn run(action: TriggerAction) -> std::result::Result<Option<WasmResponse>, String> {
+        let market_maker_address =
+            config_var("market_maker").ok_or_else(|| "Failed to get market maker address")?;
+        let conditional_tokens_address = config_var("conditional_tokens")
+            .ok_or_else(|| "Failed to get conditional tokens address")?;
+
+        let trigger_info = decode_trigger_event(action.data)?;
 
         let bitcoin_price = block_on(get_price_feed(1))?;
 
         // Resolve the market as YES if the price of Bitcoin is over $1.
         let result = bitcoin_price > 1.0;
 
-        Ok(Some(encode_trigger_output(
-            trigger_info.triggerId,
-            data.lmsrMarketMaker,
-            data.conditionalTokens,
-            result,
-        )))
+        Ok(Some(WasmResponse {
+            payload: encode_trigger_output(
+                trigger_info.triggerId,
+                Address::from_str(&market_maker_address).unwrap(),
+                Address::from_str(&conditional_tokens_address).unwrap(),
+                result,
+            ),
+            ordering: None,
+        }))
     }
 }
 

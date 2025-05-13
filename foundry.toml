@@ -5,6 +5,10 @@ libs = ['lib']
 solidity_version = '0.8.28'
 evm_version = 'shanghai'
 via_ir = false
+ffi = false
 fs_permissions = [{ access = "read-write", path = "./" }]
+
+optimizer = true
+optimizer-runs = 10_000_000
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

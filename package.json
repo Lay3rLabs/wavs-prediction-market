@@ -1,6 +1,6 @@
 {
   "name": "wavs-prediction-market",
-  "version": "1.0.0",
+  "version": "0.4.0-beta.2",
   "license": "MIT",
   "scripts": {
     "claude-code": "docker compose -f .claude/docker-compose.claude.yml run --rm --remove-orphans -it claude-code-sandbox bash -c 'claude; exec'",
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.2.0",
-    "@wavs/solidity": "^0.3.0",
+    "@wavs/solidity": "0.4.0-beta.1",
     "@lay3rlabs/conditional-tokens-contracts": "github:lay3rlabs/conditional-tokens-contracts#v0.1.0",
     "@lay3rlabs/conditional-tokens-market-makers": "github:lay3rlabs/conditional-tokens-market-makers#v0.1.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.6"

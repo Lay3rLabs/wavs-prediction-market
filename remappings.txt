@@ -1,6 +1,9 @@
 @openzeppelin-contracts=node_modules/@openzeppelin/contracts/
 @openzeppelin/contracts=node_modules/@openzeppelin/contracts/
-@wavs/=node_modules/@wavs/solidity/
+@wavs=node_modules/@wavs/solidity/contracts
 forge-std=node_modules/forge-std/src
 @lay3rlabs/conditional-tokens-contracts=node_modules/@lay3rlabs/conditional-tokens-contracts/contracts
 @lay3rlabs/conditional-tokens-market-makers=node_modules/@lay3rlabs/conditional-tokens-market-makers/contracts
+
+contracts/=src/contracts
+interfaces/=src/interfaces

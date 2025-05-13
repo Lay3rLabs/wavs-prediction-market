@@ -6,36 +6,19 @@ import {IWavsServiceManager} from "@wavs/interfaces/IWavsServiceManager.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 
-import {ITypes} from "../interfaces/ITypes.sol";
+import {IWavsTrigger} from "interfaces/IWavsTrigger.sol";
 import {PredictionMarketFactory} from "./PredictionMarketFactory.sol";
 
 // The contract responsible for triggering the oracle to resolve the market and handling the oracle output and instructing the market maker to resolve the market.
-contract PredictionMarketOracleController is IWavsServiceHandler {
+contract PredictionMarketOracleController is IWavsTrigger, IWavsServiceHandler {
     // The factory that handles creating and resolving the market.
     PredictionMarketFactory public factory;
 
-    mapping(ITypes.TriggerId => Trigger) public triggersById;
+    /// @inheritdoc IWavsTrigger
+    mapping(TriggerId _triggerId => Trigger _trigger) public triggersById;
 
     IWavsServiceManager public serviceManager;
-    ITypes.TriggerId public nextTriggerId;
-
-    struct Trigger {
-        address creator;
-        bytes data;
-    }
-
-    // The data that is passed to the oracle AVS via the `NewTrigger` event.
-    struct TriggerInputData {
-        address lmsrMarketMaker;
-        address conditionalTokens;
-    }
-
-    // The data that is returned from the oracle AVS.
-    struct AvsOutputData {
-        address lmsrMarketMaker;
-        address conditionalTokens;
-        bool result;
-    }
+    TriggerId public nextTriggerId;
 
     constructor(address serviceManager_) {
         require(serviceManager_ != address(0), "Invalid service manager");
@@ -45,19 +28,18 @@ contract PredictionMarketOracleController is IWavsServiceHandler {
     }
 
     /**
-     * @dev Handle the AVS oracle resolution event. This should close the market and payout the corresponding outcome tokens based on the result.
-     * @param data The data returned from the oracle AVS.
-     * @param signature The signature of the data.
+     * @param envelope The envelope containing the data.
+     * @param signatureData The signature data.
      */
-    function handleSignedData(
-        bytes calldata data,
-        bytes calldata signature
+    function handleSignedEnvelope(
+        Envelope calldata envelope,
+        SignatureData calldata signatureData
     ) external override {
-        serviceManager.validate(data, signature);
+        serviceManager.validate(envelope, signatureData);
 
-        ITypes.DataWithId memory dataWithId = abi.decode(
-            data,
-            (ITypes.DataWithId)
+        DataWithId memory dataWithId = abi.decode(
+            envelope.payload,
+            (DataWithId)
         );
 
         Trigger memory trigger = triggersById[dataWithId.triggerId];
@@ -78,42 +60,39 @@ contract PredictionMarketOracleController is IWavsServiceHandler {
 
     /**
      * @dev Trigger the oracle AVS to resolve the market.
-     * @param triggerData The data to pass to the oracle AVS.
      * @return triggerId The ID of the trigger.
      */
-    function addTrigger(
-        TriggerInputData calldata triggerData
-    ) external payable returns (ITypes.TriggerId triggerId) {
+    function addTrigger() external payable returns (TriggerId triggerId) {
         require(msg.value == 0.1 ether, "Payment must be exactly 0.1 ETH");
 
         // Get the next trigger ID
         triggerId = nextTriggerId;
-        nextTriggerId = ITypes.TriggerId.wrap(
-            ITypes.TriggerId.unwrap(nextTriggerId) + 1
-        );
+        nextTriggerId = TriggerId.wrap(TriggerId.unwrap(nextTriggerId) + 1);
 
-        bytes memory data = abi.encode(triggerData);
-
-        Trigger memory trigger = Trigger({creator: msg.sender, data: data});
+        Trigger memory trigger = Trigger({
+            creator: msg.sender,
+            data: bytes("")
+        });
         triggersById[triggerId] = trigger;
 
-        ITypes.TriggerInfo memory triggerInfo = ITypes.TriggerInfo({
+        TriggerInfo memory triggerInfo = TriggerInfo({
             triggerId: triggerId,
             creator: trigger.creator,
             data: trigger.data
         });
 
-        emit ITypes.NewTrigger(abi.encode(triggerInfo));
+        emit NewTrigger(abi.encode(triggerInfo));
     }
 
-    /**
-     * @dev Get the trigger info for a given trigger ID.
-     * @param triggerId The ID of the trigger to get the info for.
-     * @return triggerInfo The trigger info.
-     */
+    /// @inheritdoc IWavsTrigger
     function getTrigger(
-        ITypes.TriggerId triggerId
-    ) external view returns (Trigger memory) {
-        return triggersById[triggerId];
+        TriggerId triggerId
+    ) external view override returns (TriggerInfo memory _triggerInfo) {
+        Trigger storage _trigger = triggersById[triggerId];
+        _triggerInfo = TriggerInfo({
+            triggerId: triggerId,
+            creator: _trigger.creator,
+            data: _trigger.data
+        });
     }
 }

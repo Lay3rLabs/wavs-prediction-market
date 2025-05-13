@@ -8,9 +8,9 @@ import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 
-import {PredictionMarketFactory} from "../src/contracts/PredictionMarketFactory.sol";
-import {PredictionMarketOracleController} from "../src/contracts/PredictionMarketOracleController.sol";
-import {ERC20Mintable} from "../src/contracts/ERC20Mintable.sol";
+import {PredictionMarketFactory} from "contracts/PredictionMarketFactory.sol";
+import {PredictionMarketOracleController} from "contracts/PredictionMarketOracleController.sol";
+import {ERC20Mintable} from "contracts/ERC20Mintable.sol";
 
 // forge script ./script/Deploy.s.sol ${SERVICE_MANAGER} --sig "run(string)" --rpc-url http://localhost:8545 --broadcast
 contract DeployScript is Script {

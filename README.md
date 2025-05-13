@@ -84,21 +84,22 @@ wkg config --default-registry wa.dev
 
 ## Installation and Setup
 
-### Solidity
-
-Install the required packages to build the Solidity contracts. This project supports both [submodules](./.gitmodules) and [npm packages](./package.json).
+### Configure environment
 
 ```bash
 # Install packages (npm & submodules)
 make setup
 
-# Build the contracts
-forge build
+# Run the solidity tests
+make test
+
+# copy the example env file
+cp .env.example .env
 ```
 
-### Build WASI components
+### Build Solidity contracts and WASI components
 
-Now build the WASI rust components into the `compiled` output directory.
+Now build the Solidity contracts and WASI rust components into the `compiled` output directory.
 
 > [!WARNING]
 > If you get: `error: no registry configured for namespace "wavs"`
@@ -111,7 +112,7 @@ Now build the WASI rust components into the `compiled` output directory.
 > `brew uninstall rust` & install it from <https://rustup.rs>
 
 ```bash
-make wasi-build # or `make build` to include solidity compilation.
+make build
 ```
 
 ## WAVS
@@ -127,42 +128,50 @@ make wasi-build # or `make build` to include solidity compilation.
 > - Docker Desktop: Settings -> Resources -> Network -> 'Enable Host Networking'
 > - `brew install chipmk/tap/docker-mac-net-connect && sudo brew services start chipmk/tap/docker-mac-net-connect`
 
-### Start Environment
+### Start WAVS and Anvil
 
-Start an ethereum node (anvil), the WAVS service, and deploy
-[eigenlayer](https://www.eigenlayer.xyz/) contracts to the local network.
+Start an ethereum node (anvil) and the WAVS service.
 
 ```bash
-cp .env.example .env
-
-# Start the backend
-#
-# This must remain running in your terminal. Use another terminal to run other commands.
-# You can stop the services with `ctrl+c`. Some MacOS terminals require pressing it twice.
-make start-all
+make start
 ```
 
-### Run the demo
+### Deploy contracts and service
+
+In another terminal, deploy the contracts and service to the chain and WAVS.
 
 ```bash
-# Deploy contracts
-make deploy-contracts
+make deploy
+```
 
-# Deploy the oracle service component
-make deploy-service
+### Buy YES outcome tokens
 
-# Buy YES in the prediction market
+Buy YES outcome tokens in the prediction market governed by the oracle AVS,
+which is going to resolve whether or not the price of Bitcoin is over $1.
+
+```bash
 make buy-yes
-# Notice in the logs that you start with 1e18 collateral tokens, and then purchase 1e18 YES shares for 525090975565627651 (~5.25e17) collateral tokens, leaving 474909024434372349 (~4.75e17) collateral tokens remaining.
+```
 
-# Trigger the oracle to resolve the market
-make trigger-service
+> Notice in the logs that you start with 1e18 collateral tokens, and then purchase 1e18 YES shares for 525090975565627651 (~5.25e17) collateral tokens, leaving 474909024434372349 (~4.75e17) collateral tokens remaining.
+
+### Trigger the oracle AVS
+
+Run the AVS service to resolve the market.
+
+```bash
+make resolve-market
 
 # Wait for the component to execute
 echo "waiting 3 seconds for the component to execute..."
 sleep 3
+```
 
-# Redeem YES in the resolved prediction market
+### Redeem the outcome tokens
+
+Redeem the YES outcome tokens for collateral tokens.
+
+```bash
 make redeem
 ```
 
@@ -189,11 +198,10 @@ need to be available to the frontend.
 
 ```bash
 # In a terminal, start the backend
-make start-all
+make start
 
-# In another terminal, deploy the necessary contracts/service.
-make deploy-contracts
-make deploy-service
+# In another terminal, deploy the necessary contracts and service.
+make deploy
 
 # Then install frontend dependencies
 cd frontend

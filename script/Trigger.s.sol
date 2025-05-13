@@ -4,8 +4,9 @@ pragma solidity ^0.8.22;
 import "forge-std/Script.sol";
 import {console} from "forge-std/console.sol";
 
-import {ITypes} from "../src/interfaces/ITypes.sol";
-import {PredictionMarketOracleController} from "../src/contracts/PredictionMarketOracleController.sol";
+import {PredictionMarketOracleController} from "contracts/PredictionMarketOracleController.sol";
+import {IWavsTrigger} from "interfaces/IWavsTrigger.sol";
+import {ITypes} from "interfaces/ITypes.sol";
 
 // forge script ./script/Trigger.s.sol ${ORACLE_CONTROLLER_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url http://localhost:8545 --broadcast
 contract TriggerScript is Script {
@@ -17,16 +18,8 @@ contract TriggerScript is Script {
             )
         );
 
-    function run(
-        string calldata oracleControllerAddr,
-        string calldata marketMakerAddr,
-        string calldata conditionalTokensAddr
-    ) public {
+    function run(string calldata oracleControllerAddr) public {
         address oracleAddress = vm.parseAddress(oracleControllerAddr);
-        address marketMakerAddress = vm.parseAddress(marketMakerAddr);
-        address conditionalTokensAddress = vm.parseAddress(
-            conditionalTokensAddr
-        );
 
         PredictionMarketOracleController oracle = PredictionMarketOracleController(
                 oracleAddress
@@ -34,18 +27,8 @@ contract TriggerScript is Script {
 
         vm.startBroadcast(privateKey);
 
-        // Create test trigger data using the provided message
-        PredictionMarketOracleController.TriggerInputData
-            memory triggerData = PredictionMarketOracleController
-                .TriggerInputData({
-                    lmsrMarketMaker: marketMakerAddress,
-                    conditionalTokens: conditionalTokensAddress
-                });
-
         // Add trigger (sends 0.1 ETH)
-        ITypes.TriggerId triggerId = oracle.addTrigger{value: 0.1 ether}(
-            triggerData
-        );
+        ITypes.TriggerId triggerId = oracle.addTrigger{value: 0.1 ether}();
 
         vm.stopBroadcast();
 

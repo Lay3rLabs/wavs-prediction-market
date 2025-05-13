@@ -42,16 +42,9 @@ const TriggerOracleForm: React.FC<TriggerOracleFormProps> = ({ market, onSuccess
       const signer = provider.getSigner(account.address);
       
       const oracleControllerContract = getPredictionMarketOracleControllerContract(signer);
-      
-      // Create trigger data with real market data
-      const triggerData = {
-        lmsrMarketMaker: market.marketMakerAddress,
-        conditionalTokens: market.conditionalTokensAddress,
-      };
-      
+
       // Add trigger (sends 0.1 ETH)
       const triggerTx = await oracleControllerContract.addTrigger(
-        triggerData,
         { value: ethers.utils.parseEther('0.1') }
       );
       

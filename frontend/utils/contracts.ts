@@ -8,7 +8,7 @@ export const PredictionMarketFactoryABI = [
 ];
 
 export const PredictionMarketOracleControllerABI = [
-  'function addTrigger((address lmsrMarketMaker, address conditionalTokens)) external payable returns (uint64 triggerId)',
+  'function addTrigger() external payable returns (uint64 triggerId)',
   'function handleSignedData(bytes calldata data, bytes calldata signature) external',
 ];
 

@@ -1,24 +1,18 @@
-use crate::bindings::wavs::worker::layer_types::{TriggerData, TriggerDataEthContractEvent};
-use alloy_primitives::Address;
+use crate::bindings::wavs::worker::layer_types::{TriggerData, TriggerDataEvmContractEvent};
 use alloy_sol_types::SolValue;
 use anyhow::Result;
-use wavs_wasi_chain::decode_event_log_data;
+use wavs_wasi_utils::{decode_event_log_data, evm::alloy_primitives::Address};
 
-pub fn decode_trigger_event(
-    trigger_data: TriggerData,
-) -> Result<(solidity::TriggerInfo, solidity::TriggerInputData), String> {
+pub fn decode_trigger_event(trigger_data: TriggerData) -> Result<solidity::TriggerInfo, String> {
     match trigger_data {
-        TriggerData::EthContractEvent(TriggerDataEthContractEvent { log, .. }) => {
+        TriggerData::EvmContractEvent(TriggerDataEvmContractEvent { log, .. }) => {
             let event: solidity::NewTrigger =
                 decode_event_log_data!(log).map_err(|e| e.to_string())?;
 
-            let trigger_info =
-                solidity::TriggerInfo::abi_decode(&event._0, false).map_err(|e| e.to_string())?;
+            let trigger_info = solidity::TriggerInfo::abi_decode(&event._triggerInfo)
+                .map_err(|e| e.to_string())?;
 
-            let data = solidity::TriggerInputData::abi_decode(&trigger_info.data, false)
-                .map_err(|e| format!("Failed to decode trigger data: {}", e))?;
-
-            Ok((trigger_info, data))
+            Ok(trigger_info)
         }
         _ => Err("Unsupported trigger data type".to_string()),
     }
@@ -47,24 +41,6 @@ pub fn encode_trigger_output(
 mod solidity {
     use alloy_sol_macro::sol;
     pub use ITypes::*;
-
-    sol! {
-        #[derive(Debug)]
-        struct TriggerInputData {
-            address lmsrMarketMaker;
-            address conditionalTokens;
-        }
-    }
-
-    sol! {
-        #[derive(Debug)]
-        struct AvsOutputData {
-            address lmsrMarketMaker;
-            address conditionalTokens;
-            bool result;
-        }
-    }
-
     // imports DataWithId, TriggerInfo, NewTrigger, and TriggerId
     sol!("../../src/interfaces/ITypes.sol");
 }

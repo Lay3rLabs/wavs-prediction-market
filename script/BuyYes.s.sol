@@ -9,7 +9,7 @@ import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
 import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRMarketMaker.sol";
 
-import {ERC20Mintable} from "../src/contracts/ERC20Mintable.sol";
+import {ERC20Mintable} from "contracts/ERC20Mintable.sol";
 
 // forge script ./script/BuyYes.s.sol --sig "run(string, string, string)" --rpc-url http://localhost:8545 --broadcast
 contract BuyYesPredictionMarket is Script {
