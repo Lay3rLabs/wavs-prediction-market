@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
-import "forge-std/Script.sol";
+import {Common} from "script/Common.s.sol";
 import {stdJson} from "forge-std/StdJson.sol";
+import {console} from "forge-std/console.sol";
 
 import {Strings} from "@openzeppelin-contracts/utils/Strings.sol";
 import {ConditionalTokens} from "@lay3rlabs/conditional-tokens-contracts/ConditionalTokens.sol";
@@ -13,7 +14,7 @@ import {PredictionMarketOracleController} from "contracts/PredictionMarketOracle
 import {ERC20Mintable} from "contracts/ERC20Mintable.sol";
 
 // forge script ./script/Deploy.s.sol ${SERVICE_MANAGER} --sig "run(string)" --rpc-url http://localhost:8545 --broadcast
-contract DeployScript is Script {
+contract DeployScript is Common {
     using stdJson for string;
 
     string root = vm.projectRoot();
@@ -21,23 +22,15 @@ contract DeployScript is Script {
     string script_output_path =
         string.concat(root, "/.docker/script_deploy.json");
 
-    uint256 privateKey =
-        vm.envOr(
-            "ANVIL_PRIVATE_KEY",
-            uint256(
-                0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-            )
-        );
-
     function run(string calldata serviceManagerAddr) public {
         address serviceManager = vm.parseAddress(serviceManagerAddr);
-        address deployer = vm.addr(privateKey);
+        address deployer = vm.addr(_privateKey);
 
         uint64 fee = 5e16; // 5% fee
         // fund with 1,000 collateral tokens
         uint256 funding = 1_000e18;
 
-        vm.startBroadcast(privateKey);
+        vm.startBroadcast(_privateKey);
 
         // Deploy the contracts
         PredictionMarketOracleController oracleController = new PredictionMarketOracleController(

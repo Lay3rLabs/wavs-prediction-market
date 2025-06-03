@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
-import {stdJson} from "forge-std/StdJson.sol";
-import {Script} from "forge-std/Script.sol";
+import {Common} from "script/Common.s.sol";
+
 import {console} from "forge-std/console.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
@@ -12,15 +12,7 @@ import {LMSRMarketMaker} from "@lay3rlabs/conditional-tokens-market-makers/LMSRM
 import {ERC20Mintable} from "contracts/ERC20Mintable.sol";
 
 // forge script ./script/BuyYes.s.sol --sig "run(string, string, string)" --rpc-url http://localhost:8545 --broadcast
-contract BuyYesPredictionMarket is Script {
-    uint256 privateKey =
-        vm.envOr(
-            "ANVIL_PRIVATE_KEY",
-            uint256(
-                0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-            )
-        );
-
+contract BuyYesPredictionMarket is Common {
     address private factoryAddress;
     address private marketMakerAddress;
     address private conditionalTokensAddress;
@@ -32,7 +24,7 @@ contract BuyYesPredictionMarket is Script {
         string calldata conditionalTokensAddr,
         string calldata collateralTokenAddr
     ) public {
-        address deployer = vm.addr(privateKey);
+        address deployer = vm.addr(_privateKey);
 
         factoryAddress = vm.parseAddress(factoryAddr);
         marketMakerAddress = vm.parseAddress(marketMakerAddr);
@@ -54,7 +46,7 @@ contract BuyYesPredictionMarket is Script {
         console.log("Collateral token address:", collateralTokenAddress);
         console.log("Conditional tokens address:", conditionalTokensAddress);
 
-        vm.startBroadcast(privateKey);
+        vm.startBroadcast(_privateKey);
 
         collateralToken.mint(deployer, uint256(buying));
         collateralToken.approve(address(marketMaker), uint256(buying));

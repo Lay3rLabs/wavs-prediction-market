@@ -3,32 +3,47 @@
 # Check if user is in docker group to determine if sudo is needed
 SUDO := $(shell if groups | grep -q docker; then echo ''; else echo 'sudo'; fi)
 
-# Default target is build
-default: build
+# Define common variables
+CARGO=cargo
+CREDENTIAL?=""
+DOCKER_IMAGE?=ghcr.io/lay3rlabs/wavs:0.4.0-rc
+MIDDLEWARE_DOCKER_IMAGE?=ghcr.io/lay3rlabs/wavs-middleware:5ebc489
+IPFS_ENDPOINT?=http://127.0.0.1:5001
+RPC_URL?=`bash ./script/get-rpc.sh`
+DEPLOYER_PK=`cat .nodes/deployer`
+SERVICE_FILE?=.docker/service.json
+SERVICE_SUBMISSION_ADDR?=`jq -r .deployedTo .docker/submit.json`
+SERVICE_TRIGGER_ADDR?=`jq -r .deployedTo .docker/trigger.json`
+WASI_BUILD_DIR ?= ""
+ENV_FILE?=.env
+WAVS_CMD ?= $(SUDO) docker run --rm --network host $$(test -f ${ENV_FILE} && echo "--env-file ./${ENV_FILE}") -v $$(pwd):/data ${DOCKER_IMAGE} wavs-cli
+WAVS_ENDPOINT?="http://127.0.0.1:8000"
+-include ${ENV_FILE}
 
 # wavs-prediction-market custom
+COMPONENT_FILENAME?=prediction_market_oracle.wasm
 PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS?=`jq -r '.oracle_controller' "./.docker/script_deploy.json"`
 PREDICTION_MARKET_FACTORY_ADDRESS?=`jq -r '.factory' "./.docker/script_deploy.json"`
 COLLATERAL_TOKEN_ADDRESS?=`jq -r '.collateral_token' "./.docker/script_deploy.json"`
 CONDITIONAL_TOKENS_ADDRESS?=`jq -r '.conditional_tokens' "./.docker/script_deploy.json"`
 MARKET_MAKER_ADDRESS?=`jq -r '.market_maker' "./.docker/script_deploy.json"`
+WAVS_SERVICE_MANAGER_ADDRESS?=`jq -r .addresses.WavsServiceManager .nodes/avs_deploy.json`
 
-# Define common variables
-AGGREGATOR_URL?=http://127.0.0.1:8001
-ANVIL_PRIVATE_KEY?=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-CARGO=cargo
-COMPONENT_FILENAME?=prediction_market_oracle.wasm
-CREDENTIAL?=""
-DOCKER_IMAGE?=ghcr.io/lay3rlabs/wavs:0.4.0-beta.2
-MIDDLEWARE_DOCKER_IMAGE?=ghcr.io/lay3rlabs/wavs-middleware:0.4.0-beta.2
-IPFS_ENDPOINT?=http://127.0.0.1:5001
-RPC_URL?=http://127.0.0.1:8545
-SERVICE_FILE?=.docker/service.json
-SERVICE_MANAGER_ADDR?=`jq -r .addresses.WavsServiceManager .nodes/avs_deploy.json`
-WASI_BUILD_DIR ?= ""
-WAVS_CMD ?= $(SUDO) docker run --rm --network host $$(test -f .env && echo "--env-file ./.env") -v $$(pwd):/data ${DOCKER_IMAGE} wavs-cli
-WAVS_ENDPOINT?="http://127.0.0.1:8000"
-ENV_FILE?=.env
+## deploy-contracts: deploying the contracts | WAVS_SERVICE_MANAGER_ADDRESS, RPC_URL
+deploy-contracts:
+	@forge script ./script/Deploy.s.sol ${WAVS_SERVICE_MANAGER_ADDRESS} --sig "run(string)" --rpc-url $(RPC_URL) --private-key "${DEPLOYER_PK}" --broadcast
+
+## buy-yes: buying YES in the prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, MARKET_MAKER_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, COLLATERAL_TOKEN_ADDRESS, RPC_URL
+buy-yes:
+	@forge script ./script/BuyYes.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} --sig "run(string,string,string,string)" --rpc-url $(RPC_URL) --broadcast -v 4
+
+## resolve-market: trigger the service to resolve the market | PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS, RPC_URL
+resolve-market:
+	@forge script ./script/Trigger.s.sol ${PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS} --sig "run(string)" --rpc-url $(RPC_URL) --broadcast -v 4
+
+## redeem: redeeming the YES in the resolved prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, COLLATERAL_TOKEN_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, RPC_URL
+redeem:
+	@forge script ./script/Redeem.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url $(RPC_URL) --broadcast
 
 # Default target is build
 default: build
@@ -36,9 +51,15 @@ default: build
 ## build: building the project
 build: _build_forge wasi-build
 
-## wasi-build: building the WAVS wasi component(s)
+## wasi-build: building WAVS wasi components | WASI_BUILD_DIR
 wasi-build:
 	@./script/build_components.sh $(WASI_BUILD_DIR)
+
+## wasi-exec: executing the WAVS wasi component(s) | COMPONENT_FILENAME, COIN_MARKET_CAP_ID
+wasi-exec: pull-image
+	@$(WAVS_CMD) exec --log-level=info --data /data/.docker --home /data \
+	--component "/data/compiled/$(COMPONENT_FILENAME)" \
+	--input `cast format-bytes32-string $(COIN_MARKET_CAP_ID)`
 
 ## clean: cleaning the project files
 clean: clean-docker
@@ -50,7 +71,7 @@ clean: clean-docker
 
 ## clean-docker: remove unused docker containers
 clean-docker:
-	@$(SUDO) docker rm -v $(shell $(SUDO) docker ps -a --filter status=exited -q) 2> /dev/null || true
+	@$(SUDO) docker rm -v $(shell $(SUDO) docker ps -a --filter status=exited -q) > /dev/null 2>&1 || true
 
 ## fmt: formatting solidity and rust code
 fmt:
@@ -66,37 +87,17 @@ setup: check-requirements
 	@forge install
 	@npm install
 
-## start: run start script
-start:
-	@bash ./script/start.sh
+## start-all-local: starting anvil and core services (like IPFS for example)
+start-all-local: clean-docker setup-env
+	@sh ./script/start_all.sh
 
-## deploy: run deploy script
-deploy:
-	@bash ./script/deploy.sh
+## get-trigger-from-deploy: getting the trigger address from the script deploy
+get-trigger-from-deploy:
+	@jq -r '.deployedTo' "./.docker/trigger.json"
 
-## start-all: starting anvil and WAVS with docker compose
-start-all: clean-docker setup-env
-	@bash ./script/start_all.sh
-
-## deploy-contracts: deploying the contracts | SERVICE_MANAGER_ADDR, RPC_URL
-deploy-contracts:
-	@forge script ./script/Deploy.s.sol ${SERVICE_MANAGER_ADDR} --sig "run(string)" --rpc-url $(RPC_URL) --broadcast
-
-## build-service: building the service JSON
-build-service:
-	@bash ./script/build_service.sh
-
-## buy-yes: buying YES in the prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, MARKET_MAKER_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, COLLATERAL_TOKEN_ADDRESS, RPC_URL
-buy-yes:
-	@forge script ./script/BuyYes.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} --sig "run(string,string,string,string)" --rpc-url $(RPC_URL) --broadcast -v 4
-
-## resolve-market: trigger the service to resolve the market | PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS, RPC_URL
-resolve-market:
-	@forge script ./script/Trigger.s.sol ${PREDICTION_MARKET_ORACLE_CONTROLLER_ADDRESS} --sig "run(string)" --rpc-url $(RPC_URL) --broadcast -v 4
-
-## redeem: redeeming the YES in the resolved prediction market | PREDICTION_MARKET_FACTORY_ADDRESS, COLLATERAL_TOKEN_ADDRESS, CONDITIONAL_TOKENS_ADDRESS, RPC_URL
-redeem:
-	@forge script ./script/Redeem.s.sol ${PREDICTION_MARKET_FACTORY_ADDRESS} ${COLLATERAL_TOKEN_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url $(RPC_URL) --broadcast
+## get-submit-from-deploy: getting the submit address from the script deploy
+get-submit-from-deploy:
+	@jq -r '.deployedTo' "./.docker/submit.json"
 
 ## wavs-cli: running wavs-cli in docker
 wavs-cli:
@@ -104,32 +105,58 @@ wavs-cli:
 
 ## upload-component: uploading the WAVS component | COMPONENT_FILENAME, WAVS_ENDPOINT
 upload-component:
-# TODO: move to `$(WAVS_CMD) upload-component ./compiled/${COMPONENT_FILENAME} --wavs-endpoint ${WAVS_ENDPOINT}`
-	@wget --post-file=./compiled/${COMPONENT_FILENAME} --header="Content-Type: application/wasm" -O - ${WAVS_ENDPOINT}/upload | jq -r .digest
-
-SERVICE_URL?="http://127.0.0.1:8080/ipfs/service.json"
-## deploy-service: deploying the WAVS component service json | SERVICE_URL, CREDENTIAL, WAVS_ENDPOINT
-deploy-service:
-	@$(WAVS_CMD) deploy-service --service-url "$(SERVICE_URL)" --log-level=info --data /data/.docker --home /data $(if $(WAVS_ENDPOINT),--wavs-endpoint $(WAVS_ENDPOINT),) $(if $(CREDENTIAL),--evm-credential $(CREDENTIAL),)
-
-## upload-to-ipfs: uploading the service config to IPFS | IPFS_ENDPOINT, SERVICE_FILE
-upload-to-ipfs:
-	@curl -s -X POST "${IPFS_ENDPOINT}/api/v0/add?pin=true" \
-		-H "Content-Type: multipart/form-data" \
-		-F file=@${SERVICE_FILE} | jq -r .Hash
-
-## operator-list: listing the AVS operators | ENV_FILE
-operator-list:
-	@docker run --rm --network host --env-file ${ENV_FILE} -v ./.nodes:/root/.nodes --entrypoint /wavs/list_operator.sh ${MIDDLEWARE_DOCKER_IMAGE}
-
-AVS_PRIVATE_KEY?=""
-## operator-register: listing the AVS operators | ENV_FILE, AVS_PRIVATE_KEY
-operator-register:
-	@if [ -z "${AVS_PRIVATE_KEY}" ]; then \
-		echo "Error: AVS_PRIVATE_KEY is not set. Please set it to your AVS private key."; \
+	@if [ -z "${COMPONENT_FILENAME}" ]; then \
+		echo "Error: COMPONENT_FILENAME is not set. Please set it to your WAVS component filename."; \
 		exit 1; \
 	fi
-	@docker run --rm --network host --env-file ${ENV_FILE} -v ./.nodes:/root/.nodes --entrypoint /wavs/register.sh ${MIDDLEWARE_DOCKER_IMAGE} "${AVS_PRIVATE_KEY}"
+	@wget --post-file=./compiled/${COMPONENT_FILENAME} --header="Content-Type: application/wasm" -O - ${WAVS_ENDPOINT}/upload | jq -r .digest
+
+IPFS_GATEWAY?="https://ipfs.io/ipfs"
+## deploy-service: deploying the WAVS component service json | SERVICE_URL, CREDENTIAL, WAVS_ENDPOINT
+deploy-service:
+# this wait is required to ensure the WAVS service has time to service check
+	@if [ -z "${SERVICE_URL}" ]; then \
+		echo "Error: SERVICE_URL is not set. Set SERVICE_URL to a link / ipfs url."; \
+		exit 1; \
+	fi
+	@if [ -n "${WAVS_ENDPOINT}" ]; then \
+		if [ "$$(curl -s -o /dev/null -w "%{http_code}" ${WAVS_ENDPOINT}/app)" != "200" ]; then \
+			echo "Error: WAVS_ENDPOINT is not reachable. Please check WAVS is online, or run this again in a few seconds."; \
+			exit 1; \
+		fi; \
+	fi
+	@$(WAVS_CMD) deploy-service --service-url ${SERVICE_URL} --log-level=debug --data /data/.docker --home /data $(if $(WAVS_ENDPOINT),--wavs-endpoint $(WAVS_ENDPOINT),) $(if $(IPFS_GATEWAY),--ipfs-gateway $(IPFS_GATEWAY),)
+
+## get-trigger: get the trigger id | SERVICE_TRIGGER_ADDR, RPC_URL
+get-trigger:
+	@forge script ./script/ShowResult.s.sol ${SERVICE_TRIGGER_ADDR} --sig 'trigger(string)' --rpc-url $(RPC_URL) --broadcast
+
+TRIGGER_ID?=1
+## show-result: showing the result | SERVICE_SUBMISSION_ADDR, TRIGGER_ID, RPC_URL
+show-result:
+	@forge script ./script/ShowResult.s.sol ${SERVICE_SUBMISSION_ADDR} ${TRIGGER_ID} --sig 'data(string,uint64)' --rpc-url $(RPC_URL) --broadcast
+
+
+PINATA_API_KEY?=""
+## upload-to-ipfs: uploading the a service config to IPFS | SERVICE_FILE, [PINATA_API_KEY]
+upload-to-ipfs:
+	@if [ `sh script/get-deploy-status.sh` = "LOCAL" ]; then \
+		curl -X POST "http://127.0.0.1:5001/api/v0/add?pin=true" -H "Content-Type: multipart/form-data" -F file=@${SERVICE_FILE} | jq -r .Hash; \
+	else \
+		if [ -z "${PINATA_API_KEY}" ]; then \
+			echo "Error: PINATA_API_KEY is not set. Please set it to your Pinata API key -- https://app.pinata.cloud/developers/api-keys."; \
+			exit 1; \
+		fi; \
+		curl -X POST --url https://uploads.pinata.cloud/v3/files --header "Authorization: Bearer ${PINATA_API_KEY}" --header 'Content-Type: multipart/form-data' --form file=@${SERVICE_FILE} --form network=public --form name=service-`date +"%b-%d-%Y"`.json | jq -r .data.cid; \
+	fi
+
+COMMAND?=""
+PAST_BLOCKS?=500
+wavs-middleware:
+	@docker run --rm --network host --env-file ${ENV_FILE} \
+		$(if ${WAVS_SERVICE_MANAGER_ADDRESS},-e WAVS_SERVICE_MANAGER_ADDRESS=${WAVS_SERVICE_MANAGER_ADDRESS}) \
+		$(if ${PAST_BLOCKS},-e PAST_BLOCKS=${PAST_BLOCKS}) \
+		-v ./.nodes:/root/.nodes ${MIDDLEWARE_DOCKER_IMAGE} ${COMMAND}
 
 ## update-submodules: update the git submodules
 update-submodules:
@@ -152,11 +179,11 @@ _build_forge:
 
 .PHONY: setup-env
 setup-env:
-	@if [ ! -f .env ]; then \
+	@if [ ! -f ${ENV_FILE} ]; then \
 		if [ -f .env.example ]; then \
-			echo "Creating .env file from .env.example..."; \
-			cp .env.example .env; \
-			echo ".env file created successfully!"; \
+			echo "Creating ${ENV_FILE} file from .env.example..."; \
+			cp .env.example ${ENV_FILE}; \
+			echo "${ENV_FILE} file created successfully!"; \
 		fi; \
 	fi
 

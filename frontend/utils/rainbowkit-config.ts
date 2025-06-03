@@ -5,11 +5,11 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createConfig } from 'wagmi';
-import { localhost, sepolia } from 'wagmi/chains';
+import { localhost } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
 const { chains, publicClient } = configureChains(
-  [{...localhost, id: 31337}, sepolia],
+  [{...localhost, id: 17_000}],
   [publicProvider()]
 );
 

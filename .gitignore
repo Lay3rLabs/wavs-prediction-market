@@ -1,19 +1,30 @@
+# general compile
 /target
 out/
 cache/
 broadcast/
+node_modules/
+
+# WAVS
+.env
+.env-e
 compiled/*.wasm
 .docker/*.json
 .docker/*.log
-.env
-.env-e
-.env.local
-node_modules/
-lcov.info
-internal/
 wavs:worker*.wit
 wavs:worker*.wasm
-.nodes
 
-.next
+# WAVS infra
+.nodes
+infra/*
+
+# Tools
+**/.claude/settings.local.json
+
+# Frontend
+node_modules/
+.next/
+.env.local
+
+# Misc
 .DS_Store

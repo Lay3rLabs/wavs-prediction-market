@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.22;
 
-import "forge-std/Script.sol";
+import {Common} from "script/Common.s.sol";
 import {console} from "forge-std/console.sol";
 
 import {PredictionMarketOracleController} from "contracts/PredictionMarketOracleController.sol";
@@ -9,15 +9,7 @@ import {IWavsTrigger} from "interfaces/IWavsTrigger.sol";
 import {ITypes} from "interfaces/ITypes.sol";
 
 // forge script ./script/Trigger.s.sol ${ORACLE_CONTROLLER_ADDRESS} ${MARKET_MAKER_ADDRESS} ${CONDITIONAL_TOKENS_ADDRESS} --sig "run(string,string,string)" --rpc-url http://localhost:8545 --broadcast
-contract TriggerScript is Script {
-    uint256 privateKey =
-        vm.envOr(
-            "ANVIL_PRIVATE_KEY",
-            uint256(
-                0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-            )
-        );
-
+contract TriggerScript is Common {
     function run(string calldata oracleControllerAddr) public {
         address oracleAddress = vm.parseAddress(oracleControllerAddr);
 
@@ -25,7 +17,7 @@ contract TriggerScript is Script {
                 oracleAddress
             );
 
-        vm.startBroadcast(privateKey);
+        vm.startBroadcast(_privateKey);
 
         // Add trigger (sends 0.1 ETH)
         ITypes.TriggerId triggerId = oracle.addTrigger{value: 0.1 ether}();

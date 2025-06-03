@@ -6,4 +6,5 @@ forge-std=node_modules/forge-std/src
 @lay3rlabs/conditional-tokens-market-makers=node_modules/@lay3rlabs/conditional-tokens-market-makers/contracts
 
 contracts/=src/contracts
+common/=src/common
 interfaces/=src/interfaces

@@ -2,11 +2,11 @@
 src = 'src'
 out = 'out'
 libs = ['lib']
-solidity_version = '0.8.28'
+solidity_version = '0.8.22'
 evm_version = 'shanghai'
 via_ir = false
-ffi = false
-fs_permissions = [{ access = "read-write", path = "./" }]
+ffi = false # false by default for security reasons
+fs_permissions = [{ access = "read-write", path = "./" },]
 
 optimizer = true
 optimizer-runs = 10_000_000
