@@ -37,11 +37,11 @@ a {
 @layer components {
   /* Card Components */
   .card-elevation-1 {
-    @apply bg-neutral-850 border border-neutral-700 rounded-card-1 p-l transition-all duration-250 ease-soft;
+    @apply bg-neutral-850 border border-neutral-700 rounded-card-1 p-l transition-all duration-250 ease-soft shadow-card-1;
   }
 
   .card-elevation-1:hover {
-    @apply opacity-85;
+    @apply shadow-card-hover transform translate-y-[-2px];
   }
 
   .card-elevation-2 {
@@ -49,47 +49,120 @@ a {
   }
 
   .card-elevation-2:hover {
-    @apply opacity-85;
+    @apply shadow-card-hover transform translate-y-[-2px];
   }
 
   /* Button Components */
   .btn-primary {
-    @apply bg-primary-800 hover:bg-primary-900 text-neutral-100 font-bold rounded-button px-8 py-3 h-button-m text-button-m transition-all duration-250 ease-soft shadow-button flex items-center justify-center;
+    @apply bg-primary-800 hover:bg-primary-900 text-neutral-100 font-semibold rounded-button px-6 py-2 h-button-m text-button-m transition-all duration-250 ease-soft shadow-button flex items-center justify-center;
   }
 
   .btn-primary:hover {
-    @apply opacity-85;
+    @apply shadow-button-hover transform translate-y-[-1px];
   }
 
   .btn-secondary {
-    @apply bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-bold rounded-button px-8 py-3 h-button-m text-button-m transition-all duration-250 ease-soft border border-neutral-700;
+    @apply bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold rounded-button px-6 py-2 h-button-m text-button-m transition-all duration-250 ease-soft border border-neutral-700;
+  }
+
+  .btn-secondary:hover {
+    @apply border-neutral-600 transform translate-y-[-1px];
   }
 
   .btn-small {
-    @apply px-6 py-2 h-button-s text-button-s;
+    @apply px-4 py-1 h-button-s text-button-s;
   }
 
   .btn-success {
-    @apply bg-success-800 hover:bg-success-900 text-neutral-100;
+    @apply bg-success-600 hover:bg-success-700 text-white;
   }
 
   .btn-alert {
-    @apply bg-alert-800 hover:bg-alert-900 text-neutral-100;
+    @apply bg-alert-600 hover:bg-alert-700 text-white;
+  }
+
+  /* Pill Components */
+  .pill {
+    @apply inline-flex items-center h-pill px-3 rounded-button text-pill font-medium shadow-pill transition-all duration-250 ease-soft;
+  }
+
+  .pill-status {
+    @apply pill bg-neutral-800 text-neutral-300 border border-neutral-700;
+  }
+
+  .pill-status.open {
+    @apply bg-primary-900/20 text-primary-400 border-primary-700/50;
+  }
+
+  .pill-status.yes {
+    @apply bg-success-900/20 text-success-400 border-success-700/50;
+  }
+
+  .pill-status.no {
+    @apply bg-alert-900/20 text-alert-400 border-alert-700/50;
+  }
+
+  .pill-id {
+    @apply pill bg-neutral-850 text-neutral-400 border border-neutral-700 cursor-pointer hover:bg-neutral-800 hover:text-neutral-300 font-mono;
+  }
+
+  .pill-id:hover {
+    @apply transform scale-105;
+  }
+
+  /* Progress Bar Components */
+  .progress-container {
+    @apply relative w-full h-2 bg-neutral-800 rounded-full overflow-hidden shadow-inner-glow;
+  }
+
+  .progress-bar {
+    @apply absolute top-0 left-0 h-full transition-all duration-500 ease-soft;
+  }
+
+  .progress-bar.yes {
+    @apply bg-gradient-to-r from-success-600 to-success-500;
+  }
+
+  .progress-bar.no {
+    @apply bg-gradient-to-r from-alert-600 to-alert-500;
+  }
+
+  .progress-indicator {
+    @apply flex justify-between items-center mt-2 text-body-xs;
+  }
+
+  .progress-label {
+    @apply flex items-center gap-1 font-medium;
+  }
+
+  .progress-label.yes {
+    @apply text-success-400;
+  }
+
+  .progress-label.no {
+    @apply text-alert-400;
   }
 
   /* Input Components */
   .input-field {
-    @apply bg-neutral-800 border border-neutral-700 rounded-card-2 px-m py-3 text-body-m text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all duration-250 ease-soft;
+    @apply bg-neutral-800 border border-neutral-700 rounded-card-2 px-m py-2 text-body-s text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all duration-250 ease-soft;
   }
 
   .input-field:disabled {
     @apply bg-neutral-700 text-neutral-400 cursor-not-allowed;
   }
 
+  .input-field:focus {
+    @apply shadow-lg;
+  }
+
   /* Typography Components */
   .title-glow {
-    @apply drop-shadow-[0_8px_8px_rgba(231,212,198,0.3)];
-    text-shadow: inset 0 8px 8px rgba(231, 212, 198, 0.3);
+    @apply drop-shadow-[0_0_20px_rgba(157,125,197,0.15)];
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
   }
 
   /* Legacy compatibility classes */
@@ -107,33 +180,79 @@ a {
 
   /* Status indicators */
   .status-success {
-    @apply bg-success-900/30 border border-success-700 text-success-600 rounded-card-2 px-m py-s text-body-s;
+    @apply bg-success-900/20 border border-success-700/50 text-success-400 rounded-card-2 px-m py-s text-body-s;
   }
 
   .status-error {
-    @apply bg-alert-900/30 border border-alert-700 text-alert-600 rounded-card-2 px-m py-s text-body-s;
+    @apply bg-alert-900/20 border border-alert-700/50 text-alert-400 rounded-card-2 px-m py-s text-body-s;
   }
 
   .status-warning {
-    @apply bg-primary-900/30 border border-primary-700 text-primary-600 rounded-card-2 px-m py-s text-body-s;
+    @apply bg-primary-900/20 border border-primary-700/50 text-primary-400 rounded-card-2 px-m py-s text-body-s;
   }
 
   /* Interactive elements */
   .interactive-hover {
-    @apply cursor-pointer transition-all duration-250 ease-soft hover:opacity-85;
+    @apply cursor-pointer transition-all duration-250 ease-soft hover:transform hover:translate-y-[-1px];
+  }
+
+  .copy-button {
+    @apply opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 text-neutral-500 hover:text-neutral-300 cursor-pointer;
+  }
+
+  /* Market specific components */
+  .market-header {
+    @apply flex items-start justify-between gap-4 mb-4;
+  }
+
+  .market-question {
+    @apply text-title-s font-semibold text-neutral-100 leading-tight;
+  }
+
+  .market-metadata {
+    @apply grid grid-cols-2 gap-4 mt-4;
+  }
+
+  .metadata-item {
+    @apply space-y-1;
+  }
+
+  .metadata-label {
+    @apply text-body-xs text-neutral-500 uppercase tracking-wide font-medium;
+  }
+
+  .metadata-value {
+    @apply text-body-s text-neutral-200 font-medium;
+  }
+
+  .market-footer {
+    @apply flex justify-between items-center pt-4 mt-4 border-t border-neutral-700;
   }
 
   /* Spacing utilities */
   .section-spacing {
-    @apply space-y-xl;
+    @apply space-y-8;
   }
 
   .content-spacing {
-    @apply space-y-l;
+    @apply space-y-6;
   }
 
   .element-spacing {
-    @apply space-y-m;
+    @apply space-y-4;
+  }
+
+  /* Animation utilities */
+  .animate-in {
+    @apply animate-fade-in;
+  }
+
+  .animate-up {
+    @apply animate-slide-up;
+  }
+
+  .pulse-glow {
+    @apply animate-pulse-soft;
   }
 }
 

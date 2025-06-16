@@ -31,32 +31,49 @@ module.exports = {
           700: "#8265A1", // Accent highlights / tags
           600: "#9D7DC5", // Links / focus rings
           500: "#B49ADC", // Background tints / icons
+          400: "#C4B5E8", // Light primary
+          300: "#D4C9F0", // Lighter primary
+          200: "#E4DDF8", // Very light primary
+          100: "#F4F1FC", // Minimal primary
+          50: "#FAFAFE", // Barely visible primary
         },
         // Green Success
         success: {
-          900: "#255E52", // Strong success / BG
-          800: "#2F7B69", // Filled success UI
-          700: "#3E9C81", // Icons / chips
-          600: "#52B79D", // Text / buttons
-          500: "#73D4BB", // Tags / faded BG
+          900: "#064e3b", // Strong success / BG
+          800: "#065f46", // Filled success UI
+          700: "#047857", // Icons / chips
+          600: "#059669", // Text / buttons
+          500: "#10b981", // Tags / faded BG
+          400: "#34d399", // Light success
+          300: "#6ee7b7", // Lighter success
+          200: "#a7f3d0", // Very light success
+          100: "#d1fae5", // Minimal success
+          50: "#ecfdf5", // Barely visible success
         },
         // Red Alert/Error
         alert: {
-          900: "#5B3A42", // Error backgrounds
-          800: "#814B56", // Filled warnings
-          700: "#A7656F", // Icon / text warning
-          600: "#C38D99", // Subtle alerts
-          500: "#D8A9B5", // Light alert tags
+          900: "#7f1d1d", // Error backgrounds
+          800: "#991b1b", // Filled warnings
+          700: "#dc2626", // Icon / text warning
+          600: "#ef4444", // Subtle alerts
+          500: "#f87171", // Light alert tags
+          400: "#fca5a5", // Very light alert
+          300: "#fecaca", // Lighter alert
+          200: "#fecdd3", // Very light alert
+          100: "#fee2e2", // Minimal alert
+          50: "#fef2f2", // Barely visible alert
         },
       },
       fontSize: {
-        "title-xl": ["50px", { lineHeight: "1.1", fontWeight: "600" }], // Hero titles
-        "title-m": ["38px", { lineHeight: "1.1", fontWeight: "700" }], // Section headers
-        "title-s": ["28px", { lineHeight: "1.2", fontWeight: "700" }], // Widget titles
-        "body-m": ["22px", { lineHeight: "1.4", fontWeight: "400" }], // Paragraphs
-        "body-s": ["18px", { lineHeight: "1.4", fontWeight: "400" }], // Secondary text
-        "button-m": ["22px", { lineHeight: "1.2", fontWeight: "700" }], // Main buttons
-        "button-s": ["18px", { lineHeight: "1.2", fontWeight: "700" }], // Small buttons
+        "title-xl": ["32px", { lineHeight: "1.1", fontWeight: "600" }], // Hero titles
+        "title-m": ["24px", { lineHeight: "1.2", fontWeight: "700" }], // Section headers
+        "title-s": ["20px", { lineHeight: "1.3", fontWeight: "600" }], // Widget titles
+        "body-m": ["16px", { lineHeight: "1.5", fontWeight: "400" }], // Paragraphs
+        "body-s": ["14px", { lineHeight: "1.4", fontWeight: "400" }], // Secondary text
+        "body-xs": ["12px", { lineHeight: "1.4", fontWeight: "400" }], // Tiny text
+        "button-m": ["16px", { lineHeight: "1.2", fontWeight: "600" }], // Main buttons
+        "button-s": ["14px", { lineHeight: "1.2", fontWeight: "500" }], // Small buttons
+        pill: ["12px", { lineHeight: "1.2", fontWeight: "500" }], // Pills and badges
       },
       spacing: {
         xs: "4px", // spaceXS - Icon padding / border-radius
@@ -71,10 +88,14 @@ module.exports = {
         button: "99999px", // Button radius
       },
       boxShadow: {
-        "card-2": "12px 12px 24px rgba(0, 0, 0, 0.15)", // Elevation 2 card shadow
-        button: "0 8px 8px rgba(226, 212, 198, 0.3)", // Button shadow
-        glow: "0 8px 8px rgba(231, 212, 198, 0.3)", // Title/logo glow
-        "inner-glow": "inset 0 8px 8px rgba(231, 212, 198, 0.3)", // Inner glow
+        "card-1": "0 2px 8px rgba(0, 0, 0, 0.08)", // Subtle card shadow
+        "card-2": "0 8px 32px rgba(0, 0, 0, 0.24)", // Elevation 2 card shadow
+        "card-hover": "0 12px 40px rgba(0, 0, 0, 0.32)", // Hover state shadow
+        button: "0 4px 12px rgba(0, 0, 0, 0.15)", // Button shadow
+        "button-hover": "0 6px 16px rgba(0, 0, 0, 0.20)", // Button hover shadow
+        glow: "0 0 20px rgba(157, 125, 197, 0.15)", // Title/logo glow
+        "inner-glow": "inset 0 2px 4px rgba(0, 0, 0, 0.06)", // Inner glow
+        pill: "0 2px 4px rgba(0, 0, 0, 0.1)", // Pill shadow
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -88,8 +109,28 @@ module.exports = {
         250: "250ms",
       },
       height: {
-        "button-m": "48px", // Medium button height
-        "button-s": "36px", // Small button height
+        "button-m": "40px", // Medium button height
+        "button-s": "32px", // Small button height
+        pill: "24px", // Pill height
+      },
+      animation: {
+        "fade-in": "fadeIn 0.3s ease-in-out",
+        "slide-up": "slideUp 0.3s ease-out",
+        "pulse-soft": "pulseSoft 2s infinite",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(10px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
       },
     },
   },

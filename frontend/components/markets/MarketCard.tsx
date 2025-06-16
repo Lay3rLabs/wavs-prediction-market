@@ -1,83 +1,144 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Market } from "@/types";
 import Card from "../ui/Card";
 import { formatProbability, formatDate, shortenAddress } from "@/utils/helpers";
-import { FaCheck, FaTimes, FaQuestionCircle } from "react-icons/fa";
+import {
+  FaCheck,
+  FaTimes,
+  FaQuestionCircle,
+  FaCopy,
+  FaCheckCircle,
+} from "react-icons/fa";
 
 interface MarketCardProps {
   market: Market;
 }
 
 const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyId = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      await navigator.clipboard.writeText(market.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy ID:", err);
+    }
+  };
+
+  const getStatusPill = () => {
+    if (market.isResolved) {
+      if (market.result) {
+        return (
+          <div className="pill-status yes">
+            <FaCheck className="w-3 h-3 mr-1" />
+            YES
+          </div>
+        );
+      } else {
+        return (
+          <div className="pill-status no">
+            <FaTimes className="w-3 h-3 mr-1" />
+            NO
+          </div>
+        );
+      }
+    } else {
+      return (
+        <div className="pill-status open">
+          <FaQuestionCircle className="w-3 h-3 mr-1" />
+          OPEN
+        </div>
+      );
+    }
+  };
+
+  const yesPercentage = market.yesPrice * 100;
+  const noPercentage = market.noPrice * 100;
+
   return (
     <Link href={`/markets/${market.id}`} passHref legacyBehavior>
-      <a className="block">
+      <a className="block group">
         <Card
-          className="h-full transition-transform duration-250 ease-soft hover:scale-[1.02]"
+          className="h-full transition-all duration-250 ease-soft hover:shadow-card-hover"
           elevation={2}
           interactive
         >
-          <div className="flex items-start justify-between">
-            <h3 className="text-body-m font-semibold text-neutral-100 leading-tight">
-              {market.question}
-            </h3>
-            <div className="ml-m flex-shrink-0">
-              {market.isResolved ? (
-                market.result ? (
-                  <span className="flex items-center text-success-600 text-body-s font-medium">
-                    <FaCheck className="mr-xs" /> YES
-                  </span>
-                ) : (
-                  <span className="flex items-center text-alert-600 text-body-s font-medium">
-                    <FaTimes className="mr-xs" /> NO
-                  </span>
-                )
-              ) : (
-                <span className="flex items-center text-neutral-500 text-body-s font-medium">
-                  <FaQuestionCircle className="mr-xs" /> Open
-                </span>
-              )}
-            </div>
+          {/* Header */}
+          <div className="market-header">
+            <h3 className="market-question flex-1 pr-4">{market.question}</h3>
+            <div className="flex-shrink-0">{getStatusPill()}</div>
           </div>
 
-          <div className="mt-m flex justify-between">
-            <div className="space-y-xs">
-              <div className="text-body-s text-neutral-500">Created</div>
-              <div className="text-body-s text-neutral-300">
+          {/* Progress Bar Section */}
+          {!market.isResolved && (
+            <div className="mb-4">
+              <div className="progress-container">
+                <div
+                  className="progress-bar yes"
+                  style={{ width: `${yesPercentage}%` }}
+                />
+              </div>
+              <div className="progress-indicator">
+                <div className="progress-label yes">
+                  <FaCheck className="w-3 h-3" />
+                  <span>YES {formatProbability(market.yesPrice)}</span>
+                </div>
+                <div className="progress-label no">
+                  <FaTimes className="w-3 h-3" />
+                  <span>NO {formatProbability(market.noPrice)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Metadata */}
+          <div className="market-metadata">
+            <div className="metadata-item">
+              <div className="metadata-label">Created</div>
+              <div className="metadata-value">
                 {formatDate(market.createdAt)}
               </div>
             </div>
-            <div className="space-y-xs text-right">
-              {market.isResolved ? (
-                <>
-                  <div className="text-body-s text-neutral-500">Resolved</div>
-                  <div className="text-body-s text-neutral-300">
-                    {formatDate(market.resolvedAt!)}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-body-s text-neutral-500">
-                    Current Odds
-                  </div>
-                  <div className="text-body-s font-medium text-neutral-200">
-                    YES: {formatProbability(market.yesPrice)} / NO:{" "}
-                    {formatProbability(market.noPrice)}
-                  </div>
-                </>
-              )}
-            </div>
+            {market.isResolved ? (
+              <div className="metadata-item">
+                <div className="metadata-label">Resolved</div>
+                <div className="metadata-value">
+                  {formatDate(market.resolvedAt!)}
+                </div>
+              </div>
+            ) : (
+              <div className="metadata-item">
+                <div className="metadata-label">Volume</div>
+                <div className="metadata-value">
+                  {market.volume.toString().slice(0, 8)}...
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="mt-m pt-m border-t border-neutral-700 flex justify-between text-body-s">
-            <div className="text-neutral-400">
-              <span className="text-neutral-500">Volume:</span>{" "}
-              {market.volume.toString()}
+          {/* Footer */}
+          <div className="market-footer">
+            <div
+              className="pill-id group/copy"
+              onClick={handleCopyId}
+              title="Click to copy ID"
+            >
+              <span className="mr-2">{shortenAddress(market.id)}</span>
+              {copied ? (
+                <FaCheckCircle className="w-3 h-3 text-success-400" />
+              ) : (
+                <FaCopy className="w-3 h-3 opacity-60 group-hover/copy:opacity-100 transition-opacity" />
+              )}
             </div>
-            <div className="text-neutral-400">
-              <span className="text-neutral-500">ID:</span>{" "}
-              {shortenAddress(market.id)}
+
+            <div className="text-body-xs text-neutral-500">
+              {market.isResolved ? "Settled" : "Active"}
             </div>
           </div>
         </Card>

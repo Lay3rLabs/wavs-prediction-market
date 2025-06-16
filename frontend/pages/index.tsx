@@ -154,14 +154,20 @@ export default function Home() {
 
   return (
     <div className="section-spacing">
-      <div className="flex justify-between items-center">
-        <h1 className="text-title-m font-bold text-neutral-100 title-glow">
-          Prediction Markets
-        </h1>
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-title-xl font-bold text-neutral-100 title-glow mb-2">
+            Prediction Markets
+          </h1>
+          <p className="text-body-s text-neutral-500 max-w-2xl">
+            Trade on the outcomes of future events. Make predictions, earn
+            rewards, and help discover truth through collective intelligence.
+          </p>
+        </div>
 
         <Link href="/create" passHref legacyBehavior>
-          <a className="btn-primary inline-flex items-center">
-            <FaPlus className="mr-s" /> Create Market
+          <a className="btn-primary inline-flex items-center whitespace-nowrap">
+            <FaPlus className="mr-2 w-4 h-4" /> Create Market
           </a>
         </Link>
       </div>

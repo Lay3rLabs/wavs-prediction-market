@@ -26,23 +26,25 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-l py-m">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="text-title-s font-bold text-primary-600 title-glow">
+            <div className="text-title-m font-bold text-gradient title-glow">
               PredictX
             </div>
 
-            <nav className="hidden md:flex ml-xl">
-              <ul className="flex space-x-s">
+            <nav className="hidden md:flex ml-8">
+              <ul className="flex space-x-1">
                 {navLinks.map(({ href, label, icon }) => (
                   <li key={href}>
                     <Link href={href} passHref legacyBehavior>
                       <a
-                        className={`flex items-center px-m py-s rounded-card-2 text-body-s transition-all duration-250 ease-soft ${
+                        className={`flex items-center px-3 py-2 rounded-lg text-body-s font-medium transition-all duration-250 ease-soft ${
                           router.pathname === href
-                            ? "bg-neutral-850 text-neutral-100 border border-neutral-700"
-                            : "text-neutral-500 hover:text-neutral-100 hover:bg-neutral-850"
+                            ? "bg-neutral-850 text-neutral-100 shadow-card-1"
+                            : "text-neutral-400 hover:text-neutral-100 hover:bg-neutral-850/50"
                         }`}
                       >
-                        <span className="mr-s">{icon}</span>
+                        <span className="mr-2 w-4 h-4 flex items-center justify-center">
+                          {icon}
+                        </span>
                         <span>{label}</span>
                       </a>
                     </Link>
@@ -52,26 +54,28 @@ const Navbar: React.FC = () => {
             </nav>
           </div>
 
-          <div className="flex items-center space-x-m">
+          <div className="flex items-center space-x-4">
             <ConnectButton />
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        <nav className="md:hidden mt-m pb-s">
-          <ul className="flex justify-between">
+        <nav className="md:hidden mt-4 pb-2">
+          <ul className="flex justify-between px-2">
             {navLinks.map(({ href, label, icon }) => (
               <li key={href}>
                 <Link href={href} passHref legacyBehavior>
                   <a
-                    className={`flex flex-col items-center p-s rounded-card-2 text-button-s transition-all duration-250 ease-soft ${
+                    className={`flex flex-col items-center p-3 rounded-xl text-body-xs font-medium transition-all duration-250 ease-soft ${
                       router.pathname === href
-                        ? "text-primary-600 bg-primary-900/20"
-                        : "text-neutral-500 hover:text-neutral-100"
+                        ? "text-primary-400 bg-primary-900/20 shadow-card-1"
+                        : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-850/50"
                     }`}
                   >
-                    <span className="text-xl mb-xs">{icon}</span>
-                    <span>{label}</span>
+                    <span className="text-lg mb-1 w-5 h-5 flex items-center justify-center">
+                      {icon}
+                    </span>
+                    <span className="text-center">{label}</span>
                   </a>
                 </Link>
               </li>
