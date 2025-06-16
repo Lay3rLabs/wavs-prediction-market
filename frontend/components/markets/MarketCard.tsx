@@ -1,9 +1,9 @@
-import React from 'react';
-import Link from 'next/link';
-import { Market } from '@/types';
-import Card from '../ui/Card';
-import { formatProbability, formatDate, shortenAddress } from '@/utils/helpers';
-import { FaCheck, FaTimes, FaQuestionCircle } from 'react-icons/fa';
+import React from "react";
+import Link from "next/link";
+import { Market } from "@/types";
+import Card from "../ui/Card";
+import { formatProbability, formatDate, shortenAddress } from "@/utils/helpers";
+import { FaCheck, FaTimes, FaQuestionCircle } from "react-icons/fa";
 
 interface MarketCardProps {
   market: Market;
@@ -13,56 +13,71 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
   return (
     <Link href={`/markets/${market.id}`} passHref legacyBehavior>
       <a className="block">
-        <Card className="h-full hover:scale-[1.02] transition-transform">
+        <Card
+          className="h-full transition-transform duration-250 ease-soft hover:scale-[1.02]"
+          elevation={2}
+          interactive
+        >
           <div className="flex items-start justify-between">
-            <h3 className="text-lg font-semibold">{market.question}</h3>
-            <div className="ml-4 flex-shrink-0">
+            <h3 className="text-body-m font-semibold text-neutral-100 leading-tight">
+              {market.question}
+            </h3>
+            <div className="ml-m flex-shrink-0">
               {market.isResolved ? (
                 market.result ? (
-                  <span className="flex items-center text-green-500">
-                    <FaCheck className="mr-1" /> YES
+                  <span className="flex items-center text-success-600 text-body-s font-medium">
+                    <FaCheck className="mr-xs" /> YES
                   </span>
                 ) : (
-                  <span className="flex items-center text-red-500">
-                    <FaTimes className="mr-1" /> NO
+                  <span className="flex items-center text-alert-600 text-body-s font-medium">
+                    <FaTimes className="mr-xs" /> NO
                   </span>
                 )
               ) : (
-                <span className="flex items-center text-gray-400">
-                  <FaQuestionCircle className="mr-1" /> Open
+                <span className="flex items-center text-neutral-500 text-body-s font-medium">
+                  <FaQuestionCircle className="mr-xs" /> Open
                 </span>
               )}
             </div>
           </div>
 
-          <div className="mt-4 flex justify-between">
-            <div className="space-y-1">
-              <div className="text-sm text-gray-400">Created</div>
-              <div className="text-sm">{formatDate(market.createdAt)}</div>
+          <div className="mt-m flex justify-between">
+            <div className="space-y-xs">
+              <div className="text-body-s text-neutral-500">Created</div>
+              <div className="text-body-s text-neutral-300">
+                {formatDate(market.createdAt)}
+              </div>
             </div>
-            <div className="space-y-1 text-right">
+            <div className="space-y-xs text-right">
               {market.isResolved ? (
                 <>
-                  <div className="text-sm text-gray-400">Resolved</div>
-                  <div className="text-sm">{formatDate(market.resolvedAt!)}</div>
+                  <div className="text-body-s text-neutral-500">Resolved</div>
+                  <div className="text-body-s text-neutral-300">
+                    {formatDate(market.resolvedAt!)}
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="text-sm text-gray-400">Current Odds</div>
-                  <div className="text-sm font-medium">
-                    YES: {formatProbability(market.yesPrice)} / NO: {formatProbability(market.noPrice)}
+                  <div className="text-body-s text-neutral-500">
+                    Current Odds
+                  </div>
+                  <div className="text-body-s font-medium text-neutral-200">
+                    YES: {formatProbability(market.yesPrice)} / NO:{" "}
+                    {formatProbability(market.noPrice)}
                   </div>
                 </>
               )}
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-800 flex justify-between text-sm">
-            <div>
-              <span className="text-gray-400">Volume:</span> {market.volume.toString()}
+          <div className="mt-m pt-m border-t border-neutral-700 flex justify-between text-body-s">
+            <div className="text-neutral-400">
+              <span className="text-neutral-500">Volume:</span>{" "}
+              {market.volume.toString()}
             </div>
-            <div>
-              <span className="text-gray-400">ID:</span> {shortenAddress(market.id)}
+            <div className="text-neutral-400">
+              <span className="text-neutral-500">ID:</span>{" "}
+              {shortenAddress(market.id)}
             </div>
           </div>
         </Card>

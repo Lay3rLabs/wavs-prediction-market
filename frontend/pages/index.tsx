@@ -63,32 +63,40 @@ export default function Home() {
         // Create conditional tokens contract instance
         const conditionalTokensContract = new ethers.Contract(
           conditionalTokensAddress,
-          getConditionalTokensContract(conditionalTokensAddress, provider).interface,
+          getConditionalTokensContract(
+            conditionalTokensAddress,
+            provider
+          ).interface,
           provider
         );
 
         // Get condition ID (assuming first condition)
         const conditionId = await marketMakerContract.conditionIds(0);
-        
+
         // Check if condition is resolved by checking payoutDenominator
-        const payoutDenominator = await conditionalTokensContract.payoutDenominator(conditionId);
+        const payoutDenominator =
+          await conditionalTokensContract.payoutDenominator(conditionId);
         const conditionResolved = payoutDenominator.gt(0);
-        
+
         // Determine result if resolved
         let result = undefined;
         if (conditionResolved) {
           // Get outcome slot count first
-          const outcomeSlotCount = await conditionalTokensContract.getOutcomeSlotCount(conditionId);
-          
+          const outcomeSlotCount =
+            await conditionalTokensContract.getOutcomeSlotCount(conditionId);
+
           // Initialize arrays to store payout values
           const payouts = [];
-          
+
           // Query each payout value individually
           for (let i = 0; i < outcomeSlotCount.toNumber(); i++) {
-            const payout = await conditionalTokensContract.payoutNumerators(conditionId, i);
+            const payout = await conditionalTokensContract.payoutNumerators(
+              conditionId,
+              i
+            );
             payouts.push(payout);
           }
-          
+
           // YES wins if it has a higher payout than NO
           // Assuming binary market where index 1 is YES and index 0 is NO
           result = payouts[1].gt(payouts[0]);
@@ -112,7 +120,9 @@ export default function Home() {
           createdAt: Math.floor(Date.now() / 1000), // Mock creation date
           isResolved,
           result,
-          resolvedAt: isResolved ? Math.floor(Date.now() / 1000) - 86400 : undefined,
+          resolvedAt: isResolved
+            ? Math.floor(Date.now() / 1000) - 86400
+            : undefined,
           marketMakerAddress: MARKET_MAKER_ADDRESS,
           conditionalTokensAddress: conditionalTokensAddress,
           collateralTokenAddress: collateralTokenAddress,
@@ -143,13 +153,15 @@ export default function Home() {
   }, [publicClient]);
 
   return (
-    <div className="space-y-12">
+    <div className="section-spacing">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Prediction Markets</h1>
+        <h1 className="text-title-m font-bold text-neutral-100 title-glow">
+          Prediction Markets
+        </h1>
 
         <Link href="/create" passHref legacyBehavior>
-          <a className="crypto-button inline-flex items-center">
-            <FaPlus className="mr-2" /> Create Market
+          <a className="btn-primary inline-flex items-center">
+            <FaPlus className="mr-s" /> Create Market
           </a>
         </Link>
       </div>

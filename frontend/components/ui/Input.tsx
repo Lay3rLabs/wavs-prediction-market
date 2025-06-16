@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface InputProps {
   id: string;
@@ -22,11 +22,11 @@ const Input: React.FC<InputProps> = ({
   name,
   label,
   placeholder,
-  type = 'text',
+  type = "text",
   value,
   onChange,
   error,
-  className = '',
+  className = "",
   min,
   max,
   step,
@@ -34,11 +34,14 @@ const Input: React.FC<InputProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className={`mb-4 ${className}`}>
+    <div className={`mb-m ${className}`}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
+        <label
+          htmlFor={id}
+          className="block text-body-s font-medium text-neutral-300 mb-s"
+        >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-alert-600 ml-xs">*</span>}
         </label>
       )}
       <input
@@ -53,9 +56,11 @@ const Input: React.FC<InputProps> = ({
         step={step}
         required={required}
         disabled={disabled}
-        className={`crypto-input w-full ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
+        className={`input-field w-full ${
+          error ? "border-alert-600 focus:ring-alert-600" : ""
+        }`}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-s text-body-s text-alert-600">{error}</p>}
     </div>
   );
 };

@@ -1,33 +1,162 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  --foreground-rgb: 242, 234, 226; /* neutral-100 */
+  --background-start-rgb: 30, 30, 30; /* neutral-900 */
+  --background-end-rgb: 30, 30, 30; /* neutral-900 */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: "Montserrat", sans-serif;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-start-rgb));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 @layer components {
+  /* Card Components */
+  .card-elevation-1 {
+    @apply bg-neutral-850 border border-neutral-700 rounded-card-1 p-l transition-all duration-250 ease-soft;
+  }
+
+  .card-elevation-1:hover {
+    @apply opacity-85;
+  }
+
+  .card-elevation-2 {
+    @apply bg-neutral-800 border border-neutral-700 rounded-card-2 p-l shadow-card-2 transition-all duration-250 ease-soft;
+  }
+
+  .card-elevation-2:hover {
+    @apply opacity-85;
+  }
+
+  /* Button Components */
+  .btn-primary {
+    @apply bg-primary-800 hover:bg-primary-900 text-neutral-100 font-bold rounded-button px-8 py-3 h-button-m text-button-m transition-all duration-250 ease-soft shadow-button flex items-center justify-center;
+  }
+
+  .btn-primary:hover {
+    @apply opacity-85;
+  }
+
+  .btn-secondary {
+    @apply bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-bold rounded-button px-8 py-3 h-button-m text-button-m transition-all duration-250 ease-soft border border-neutral-700;
+  }
+
+  .btn-small {
+    @apply px-6 py-2 h-button-s text-button-s;
+  }
+
+  .btn-success {
+    @apply bg-success-800 hover:bg-success-900 text-neutral-100;
+  }
+
+  .btn-alert {
+    @apply bg-alert-800 hover:bg-alert-900 text-neutral-100;
+  }
+
+  /* Input Components */
+  .input-field {
+    @apply bg-neutral-800 border border-neutral-700 rounded-card-2 px-m py-3 text-body-m text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all duration-250 ease-soft;
+  }
+
+  .input-field:disabled {
+    @apply bg-neutral-700 text-neutral-400 cursor-not-allowed;
+  }
+
+  /* Typography Components */
+  .title-glow {
+    @apply drop-shadow-[0_8px_8px_rgba(231,212,198,0.3)];
+    text-shadow: inset 0 8px 8px rgba(231, 212, 198, 0.3);
+  }
+
+  /* Legacy compatibility classes */
   .crypto-card {
-    @apply bg-neutral-850 border border-gray-800 rounded-xl shadow-lg p-6 hover:border-primary-500 transition-all duration-300;
+    @apply card-elevation-2;
   }
-  
+
   .crypto-button {
-    @apply bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300;
+    @apply btn-primary;
   }
-  
+
   .crypto-input {
-    @apply bg-neutral-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply input-field;
   }
+
+  /* Status indicators */
+  .status-success {
+    @apply bg-success-900/30 border border-success-700 text-success-600 rounded-card-2 px-m py-s text-body-s;
+  }
+
+  .status-error {
+    @apply bg-alert-900/30 border border-alert-700 text-alert-600 rounded-card-2 px-m py-s text-body-s;
+  }
+
+  .status-warning {
+    @apply bg-primary-900/30 border border-primary-700 text-primary-600 rounded-card-2 px-m py-s text-body-s;
+  }
+
+  /* Interactive elements */
+  .interactive-hover {
+    @apply cursor-pointer transition-all duration-250 ease-soft hover:opacity-85;
+  }
+
+  /* Spacing utilities */
+  .section-spacing {
+    @apply space-y-xl;
+  }
+
+  .content-spacing {
+    @apply space-y-l;
+  }
+
+  .element-spacing {
+    @apply space-y-m;
+  }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: theme("colors.neutral.850");
+}
+
+::-webkit-scrollbar-thumb {
+  background: theme("colors.neutral.700");
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: theme("colors.neutral.600");
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid theme("colors.primary.600");
+  outline-offset: 2px;
 }
