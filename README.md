@@ -1,3 +1,7 @@
+### [!] Now moved to https://github.com/Lay3rLabs/en0va
+
+---
+
 # [WAVS](https://docs.wavs.xyz) Prediction Market Demo
 
 This project implements a prediction market that is resolved by an AVS oracle.
